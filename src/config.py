@@ -83,11 +83,21 @@ class AppConfig:
         # OCR settings from environment
         self.OCR_LANG = os.getenv("OCR_LANG", "rus+eng")
         
-        # Tesseract path from environment
-        self.TESSERACT_PATH = os.getenv(
-            "TESSERACT_PATH",
-            r"C:\Users\vyach\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
-        )
+        # Tesseract path from environment (используем os.getenv с дефолтным значением через raw string)
+        tesseract_env = os.getenv("TESSERACT_PATH")
+        if tesseract_env:
+            # Заменить экранированные последовательности (например, \v, \t) на обратные слеши
+            # Это нужно потому что .env читает строки как обычные, а не сырые
+            import re
+            # Заменяем одиночные обратные слеши перед буквами на двойные
+            tesseract_env = re.sub(r'\\(?=[a-zA-Z])', r'\\\\', tesseract_env)
+            self.TESSERACT_PATH = tesseract_env
+        else:
+            self.TESSERACT_PATH = r"C:\Users\vyach\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
+        
+        # Убедиться что путь использует обратные слеши для Windows
+        if os.name == "nt":
+            self.TESSERACT_PATH = self.TESSERACT_PATH.replace("/", "\\")
         
         # Debug mode from environment
         debug_value = os.getenv("DEBUG_MODE", "false").lower()
