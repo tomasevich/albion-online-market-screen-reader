@@ -1,4 +1,4 @@
-"""Service for analyzing screenshots and extracting data."""
+"""Сервис для анализа скриншотов и извлечения данных."""
 import json
 import logging
 import re
@@ -14,48 +14,48 @@ from src.models import AnalysisResult, ExtractedText, MarketItem
 
 logger = logging.getLogger(__name__)
 
-# Set Tesseract path
+# Установить путь к Tesseract
 pytesseract.pytesseract.tesseract_cmd = config.TESSERACT_PATH
 
 
 class ImageAnalysisService:
-    """Service responsible for analyzing images and extracting market data."""
+    """Сервис для анализа изображений и извлечения данных о рынке."""
 
     def __init__(self):
-        """Initialize the image analysis service."""
-        self._tesseract_config = r'--oem 3 --psm 6'  # Assume uniform block of text
+        """Инициализировать сервис анализа изображений."""
+        self._tesseract_config = r'--oem 3 --psm 6'  # Предположить однородный блок текста
 
     def analyze(self, screenshot_path: Path) -> AnalysisResult:
         """
-        Analyze a screenshot and extract market item data.
+        Проанализировать скриншот и извлечь данные о предмете рынка.
         
         Args:
-            screenshot_path: Path to the screenshot file.
+            screenshot_path: Путь к файлу скриншота.
             
         Returns:
-            AnalysisResult with extracted item data or error.
+            AnalysisResult с извлечёнными данными предмета или ошибкой.
         """
         try:
-            # Load image
+            # Загрузить изображение
             image = cv2.imread(str(screenshot_path))
             if image is None:
                 return AnalysisResult(
                     screenshot_path=str(screenshot_path),
-                    error="Failed to load image"
+                    error="Не удалось загрузить изображение"
                 )
             
-            logger.info(f"Analyzing image: {screenshot_path}")
+            logger.info(f"Анализ изображения: {screenshot_path}")
             
-            # Extract text from regions
+            # Извлечь текст из областей
             extracted_text = self._extract_text_from_regions(image)
             
-            # Log extracted text for debugging
+            # Вывести извлечённый текст для отладки
             self._log_extracted_text(extracted_text)
             
-            # Parse and create market item
+            # Проанализировать и создать предмет рынка
             item = self._parse_market_item(extracted_text, screenshot_path)
             
-            # Save debug image if enabled
+            # Сохранить отладочное изображение, если включено
             if config.DEBUG_MODE:
                 self._save_debug_image(image, screenshot_path, extracted_text)
             
@@ -66,35 +66,35 @@ class ImageAnalysisService:
             )
             
         except Exception as e:
-            logger.exception(f"Error during image analysis: {e}")
+            logger.exception(f"Ошибка при анализе изображения: {e}")
             return AnalysisResult(
                 screenshot_path=str(screenshot_path),
                 error=str(e)
             )
 
     def _log_extracted_text(self, extracted: ExtractedText) -> None:
-        """Log extracted text for debugging."""
-        logger.debug(f"Extracted text - Title: '{extracted.title_text}'")
-        logger.debug(f"Extracted text - Buy price: '{extracted.buy_price_text}'")
-        logger.debug(f"Extracted text - Sell price: '{extracted.sell_price_text}'")
-        logger.debug(f"Extracted text - Avg price: '{extracted.avg_price_text}'")
+        """Вывести извлечённый текст для отладки."""
+        logger.debug(f"Извлечённый текст - Название: '{extracted.title_text}'")
+        logger.debug(f"Извлечённый текст - Цена покупки: '{extracted.buy_price_text}'")
+        logger.debug(f"Извлечённый текст - Цена продажи: '{extracted.sell_price_text}'")
+        logger.debug(f"Извлечённый текст - Средняя цена: '{extracted.avg_price_text}'")
 
     def _extract_text_from_regions(self, image: np.ndarray) -> ExtractedText:
         """
-        Extract text from different regions of the image using ROI config.
+        Извлечь текст из разных областей изображения с использованием конфигурации ROI.
         
         Args:
-            image: OpenCV image (BGR format).
+            image: Изображение OpenCV (формат BGR).
             
         Returns:
-            ExtractedText with text from each region.
+            ExtractedText с текстом из каждой области.
         """
         height, width = image.shape[:2]
         
-        # Get ROI coordinates from config
+        # Получить координаты ROI из конфигурации
         rois = config.roi_coordinates
         
-        # Check if we have valid ROI coordinates (not all zeros)
+        # Проверить наличие корректных координат ROI
         has_valid_rois = any(
             roi.get("x1", 0) > 0 or roi.get("y1", 0) > 0 
             for roi in rois.values()
@@ -103,49 +103,49 @@ class ImageAnalysisService:
         extracted = ExtractedText()
         
         if has_valid_rois:
-            # Use configured ROI coordinates
-            logger.info("Using configured ROI coordinates")
+            # Использовать настроенные координаты ROI
+            logger.info("Использование настроенных координат ROI")
             
-            # Title region
+            # Область названия
             if "title" in rois and self._is_valid_roi(rois["title"]):
                 title_roi = self._get_roi(image, rois["title"])
                 extracted.title_text = self._ocr_text(title_roi)
             
-            # Buy price region
+            # Область цены покупки
             if "buy_price" in rois and self._is_valid_roi(rois["buy_price"]):
                 buy_roi = self._get_roi(image, rois["buy_price"])
                 extracted.buy_price_text = self._ocr_text(buy_roi)
             
-            # Sell price region
+            # Область цены продажи
             if "sell_price" in rois and self._is_valid_roi(rois["sell_price"]):
                 sell_roi = self._get_roi(image, rois["sell_price"])
                 extracted.sell_price_text = self._ocr_text(sell_roi)
             
-            # Avg price region
+            # Область средней цены
             if "avg_price" in rois and self._is_valid_roi(rois["avg_price"]):
                 avg_roi = self._get_roi(image, rois["avg_price"])
                 extracted.avg_price_text = self._ocr_text(avg_roi)
             
         else:
-            # Fallback: Use relative coordinates (deprecated, but for backwards compatibility)
-            logger.warning("No valid ROI coordinates found, using fallback method")
+            # Резервный метод: использовать относительные координаты (устарело, но для обратной совместимости)
+            logger.warning("Корректные координаты ROI не найдены, используется резервный метод")
             roi_right = int(width * config.ROI_RIGHT_MARGIN)
             
-            # Title region (right side of screen)
+            # Область названия (правая сторона экрана)
             title_roi = image[0:int(height * 0.3), roi_right:int(width)]
             
-            # Price regions (right side)
+            # Области цен (правая сторона)
             price_area = image[int(height * 0.2):int(height * 0.6), roi_right:int(width)]
             
-            # Extract text using OCR
+            # Извлечь текст с помощью OCR
             extracted.title_text = self._ocr_text(title_roi)
-            logger.debug(f"Title OCR (fallback): {extracted.title_text}")
+            logger.debug(f"Название OCR (резервный метод): {extracted.title_text}")
             
-            # Price text (all prices together)
+            # Текст цен (все цены вместе)
             price_text = self._ocr_text(price_area)
-            logger.debug(f"Price OCR (fallback): {price_text}")
+            logger.debug(f"Цены OCR (резервный метод): {price_text}")
             
-            # Parse individual prices from combined text
+            # Парсинг отдельных цен из объединённого текста
             prices = self._parse_prices(price_text)
             extracted.buy_price_text = str(prices.get("buy", ""))
             extracted.sell_price_text = str(prices.get("sell", ""))
@@ -154,14 +154,14 @@ class ImageAnalysisService:
         return extracted
 
     def _is_valid_roi(self, roi: dict) -> bool:
-        """Check if ROI has valid coordinates."""
+        """Проверить корректность координат ROI."""
         return (
             roi.get("x1", 0) > 0 or 
             roi.get("y1", 0) > 0
         )
 
     def _get_roi(self, image: np.ndarray, roi: dict) -> np.ndarray:
-        """Extract ROI from image."""
+        """Извлечь ROI из изображения."""
         x1, y1 = roi["x1"], roi["y1"]
         x2, y2 = roi["x2"], roi["y2"]
         return image[y1:y2, x1:x2]
@@ -172,16 +172,16 @@ class ImageAnalysisService:
         screenshot_path: Path,
         extracted: ExtractedText
     ) -> None:
-        """Save debug image with ROI overlays and extracted text."""
+        """Сохранить отладочное изображение с наложениями ROI и извлечённым текстом."""
         debug_image = image.copy()
         rois = config.roi_coordinates
         
-        # Draw ROI rectangles and labels
+        # Нарисовать прямоугольники и подписи ROI
         for name, roi in rois.items():
             if self._is_valid_roi(roi):
                 color = config.COLOR_RANGES.get(name, {}).get("lower", (0, 255, 0))
                 if isinstance(color, tuple) and len(color) == 3:
-                    # Convert from dict format to tuple
+                    # Преобразовать из формата dict в tuple
                     color = (color[0], color[1], color[2])
                 else:
                     color = (0, 255, 0)
@@ -203,11 +203,11 @@ class ImageAnalysisService:
                     1
                 )
         
-        # Add extracted text overlay
+        # Добавить наложение извлечённого текста
         text_y = 30
         text_lines = [
-            f"Title: {extracted.title_text[:50]}",
-            f"Buy: {extracted.buy_price_text} | Sell: {extracted.sell_price_text} | Avg: {extracted.avg_price_text}",
+            f"Название: {extracted.title_text[:50]}",
+            f"Покупка: {extracted.buy_price_text} | Продажа: {extracted.sell_price_text} | Средняя: {extracted.avg_price_text}",
         ]
         
         for i, line in enumerate(text_lines):
@@ -221,28 +221,28 @@ class ImageAnalysisService:
                 1
             )
         
-        # Save debug image
+        # Сохранить отладочное изображение
         debug_path = screenshot_path.parent / f"debug_{screenshot_path.name}"
         cv2.imwrite(str(debug_path), debug_image)
-        logger.debug(f"Debug image saved: {debug_path}")
+        logger.debug(f"Отладочное изображение сохранено: {debug_path}")
 
     def _ocr_text(self, image_roi: np.ndarray) -> str:
         """
-        Perform OCR on image region with preprocessing.
+        Выполнить OCR для области изображения с предобработкой.
         
         Args:
-            image_roi: Region of interest.
+            image_roi: Область интереса.
             
         Returns:
-            Extracted text string.
+            Извлечённая строка текста.
         """
         if image_roi.size == 0:
             return ""
         
-        # Preprocess for better OCR accuracy
+        # Предобработать для лучшей точности OCR
         gray = cv2.cvtColor(image_roi, cv2.COLOR_BGR2GRAY)
         
-        # Resize to increase text size (helps with small text)
+        # Изменить размер для увеличения размера текста (помогает с мелким текстом)
         scale_factor = 2
         resized = cv2.resize(
             gray, 
@@ -252,21 +252,21 @@ class ImageAnalysisService:
             interpolation=cv2.INTER_CUBIC
         )
 
-        # Adaptive thresholding (better than OTSU for varied lighting)
+        # Адаптивное пороговое значение (лучше OTSU для разного освещения)
         binary = cv2.adaptiveThreshold(
             resized,
             255,
             cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
             cv2.THRESH_BINARY,
-            11,  # Block size (must be odd)
+            11,  # Размер блока (должен быть нечётным)
             2    # C
         )
         
-        # Morphological operations to connect broken characters
+        # Морфологические операции для соединения разорванных символов
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
         cleaned = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
         
-        # Perform OCR
+        # Выполнить OCR
         text = pytesseract.image_to_string(
             cleaned,
             lang=config.OCR_LANG,
@@ -277,22 +277,22 @@ class ImageAnalysisService:
 
     def _parse_prices(self, text: str) -> dict:
         """
-        Parse prices from OCR text with context awareness.
+        Распарсить цены из текста OCR с учётом контекста.
         
-        This looks for numbers with context clues in the text.
+        Ищет числа с подсказками контекста в тексте.
         
         Args:
-            text: OCR text containing prices.
+            text: Текст OCR с ценами.
             
         Returns:
-            Dictionary with parsed prices.
+            Словарь с распарсенными ценами.
         """
         prices = {"buy": 0, "sell": 0, "avg": 0}
         
-        # Pattern to find numbers (handles both comma and dot as thousand separators)
+        # Паттерн для поиска чисел (обрабатывает запятую и точку как разделители тысяч)
         number_pattern = r'\d{1,3}(?:[.,]\d{3})*(?:[.,]\d+)?'
         
-        # Find all numbers with their surrounding context
+        # Найти все числа с окружающим контекстом
         matches = re.finditer(number_pattern, text)
         
         numbers = []
@@ -312,24 +312,24 @@ class ImageAnalysisService:
             except ValueError:
                 continue
         
-        # Try to identify each price by context
+        # Попытаться определить каждую цену по контексту
         for item in numbers:
             ctx = item["context"]
             
-            # Check for buy price indicators
+            # Проверить индикаторы цены покупки
             if any(word in ctx for word in ["куп", "buy", "покуп"]):
                 if prices["buy"] == 0:
                     prices["buy"] = item["value"]
-            # Check for sell price indicators
+            # Проверить индикаторы цены продажи
             elif any(word in ctx for word in ["прод", "sell", "прода"]):
                 if prices["sell"] == 0:
                     prices["sell"] = item["value"]
-            # Check for average price indicators
+            # Проверить индикаторы средней цены
             elif any(word in ctx for word in ["сред", "avg", "average", "ср"]):
                 if prices["avg"] == 0:
                     prices["avg"] = item["value"]
         
-        # If we have 3+ numbers and no context matched, assume order: sell, buy, avg
+        # Если есть 3+ числа и контекст не совпал, предполагаем порядок: sell, buy, avg
         if prices["sell"] == 0 and prices["buy"] == 0 and prices["avg"] == 0:
             if len(numbers) >= 3:
                 prices["sell"] = numbers[0]["value"]
@@ -352,36 +352,36 @@ class ImageAnalysisService:
         screenshot_path: Path
     ) -> MarketItem | None:
         """
-        Create a MarketItem from extracted text.
+        Создать MarketItem из извлечённого текста.
         
         Args:
-            extracted: Extracted text data.
-            screenshot_path: Path to original screenshot.
+            extracted: Извлечённые текстовые данные.
+            screenshot_path: Путь к оригинальному скриншоту.
             
         Returns:
-            MarketItem if data is valid, None otherwise.
+            MarketItem если данные корректны, иначе None.
         """
-        # Clean item name - remove common OCR artifacts
+        # Очистить название предмета - убрать распространённые артефакты OCR
         item_name = extracted.title_text.strip()
         
-        # Filter out common OCR errors
+        # Отфильтровать распространённые ошибки OCR
         if item_name in ["oy", "оу", "ou", "00", "OO", "qq", ""]:
-            logger.warning(f"Invalid item name detected (OCR error): '{item_name}'")
+            logger.warning(f"Обнаружено некорректное название предмета (ошибка OCR): '{item_name}'")
             return None
         
         if len(item_name) < 2:
-            logger.warning(f"Item name too short: '{item_name}'")
+            logger.warning(f"Название предмета слишком короткое: '{item_name}'")
             return None
         
-        # Create timestamp from filename
-        filename = screenshot_path.stem  # e.g., "2025-01-15-14-30-45"
+        # Создать временную метку из имени файла
+        filename = screenshot_path.stem  # например, "2025-01-15-14-30-45"
         try:
             dt = datetime.strptime(filename, "%Y-%m-%d-%H-%M-%S")
             screenshot_date = dt.strftime(config.DATE_FORMAT)
         except ValueError:
             screenshot_date = datetime.now().strftime(config.DATE_FORMAT)
         
-        # Parse prices (in case they weren't extracted as numbers)
+        # Распарсить цены (на случай если они не были извлечены как числа)
         buy_price = self._safe_parse_int(extracted.buy_price_text)
         sell_price = self._safe_parse_int(extracted.sell_price_text)
         avg_price = self._safe_parse_int(extracted.avg_price_text)
@@ -395,13 +395,13 @@ class ImageAnalysisService:
         )
 
     def _safe_parse_int(self, value: str | int) -> int:
-        """Safely parse integer from string."""
+        """Безопасно распарсить целое число из строки."""
         if isinstance(value, int):
             return value
         if not value:
             return 0
         try:
-            # Remove common separators
+            # Убрать распространённые разделители
             cleaned = str(value).replace(',', '').replace('.', '')
             return int(cleaned)
         except (ValueError, TypeError):

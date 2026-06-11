@@ -1,4 +1,4 @@
-"""Service for capturing screenshots."""
+"""Сервис для захвата скриншотов."""
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -11,34 +11,34 @@ logger = logging.getLogger(__name__)
 
 
 class ScreenshotService:
-    """Service responsible for capturing screenshots."""
+    """Сервис для захвата скриншотов."""
 
     def __init__(self):
-        """Initialize the screenshot service."""
+        """Инициализировать сервис скриншотов."""
         self._screenshot_counter = 0
 
     def capture(self) -> Path:
         """
-        Capture a screenshot of the primary monitor.
+        Захватить скриншот основного монитора.
         
         Returns:
-            Path to the saved screenshot file.
+            Путь к сохранённому файлу скриншота.
         """
-        # Generate filename
+        # Генерировать имя файла
         timestamp = datetime.now()
         filename = timestamp.strftime(config.SCREENSHOT_FORMAT)
         filepath = config.SCREENSHOTS_DIR / filename
         
-        # Capture screen using mss (fast and efficient)
+        # Захват экрана с помощью mss (быстро и эффективно)
         with mss.mss() as sct:
-            # Get primary monitor
-            monitor = sct.monitors[1]  # monitors[0] is all monitors
+            # Получить основной монитор
+            monitor = sct.monitors[1]  # monitors[0] — все мониторы
             
-            # Capture and save
+            # Захватить и сохранить
             screenshot = sct.grab(monitor)
             mss.tools.to_png(screenshot.rgb, screenshot.size, output=str(filepath))
         
         self._screenshot_counter += 1
-        logger.info(f"Screenshot #{self._screenshot_counter} captured: {filepath}")
+        logger.info(f"Скриншот #{self._screenshot_counter} захвачен: {filepath}")
         
         return filepath

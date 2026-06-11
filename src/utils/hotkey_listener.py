@@ -1,4 +1,4 @@
-"""Hotkey listener for global keyboard events."""
+"""Прослушиватель горячих клавиш для глобальных событий клавиатуры."""
 import logging
 from typing import Callable
 
@@ -8,59 +8,59 @@ logger = logging.getLogger(__name__)
 
 
 class HotkeyListener:
-    """Service for listening to global hotkey presses."""
+    """Сервис для прослушивания глобальных нажатий горячих клавиш."""
 
     def __init__(self, hotkey: str, callback: Callable):
         """
-        Initialize the hotkey listener.
+        Инициализировать прослушиватель горячих клавиш.
         
         Args:
-            hotkey: Hotkey combination to listen for (e.g., "printscreen").
-            callback: Function to call when hotkey is pressed.
+            hotkey: Комбинация горячей клавиши (например, "printscreen").
+            callback: Функция для вызова при нажатии горячей клавиши.
         """
         self._hotkey = hotkey
         self._callback = callback
         self._running = False
 
     def start(self) -> None:
-        """Start listening for hotkey presses."""
+        """Запустить прослушивание нажатий горячих клавиш."""
         if self._running:
-            logger.warning("Hotkey listener already running")
+            logger.warning("Прослушиватель горячих клавиш уже запущен")
             return
         
-        logger.info(f"Listening for hotkey: {self._hotkey}")
+        logger.info(f"Прослушивание горячей клавиши: {self._hotkey}")
         
-        # Register hotkey callback
+        # Зарегистрировать callback горячей клавиши
         keyboard.add_hotkey(
             self._hotkey,
             self._on_hotkey_pressed,
-            suppress=False  # Allow the key to pass through
+            suppress=False  # Разрешить прохождение клавиши
         )
         
         self._running = True
         
-        logger.info("Hotkey listener started")
+        logger.info("Прослушиватель горячих клавиш запущен")
 
     def stop(self) -> None:
-        """Stop listening for hotkey presses."""
+        """Остановить прослушивание нажатий горячих клавиш."""
         if not self._running:
             return
         
-        logger.info("Stopping hotkey listener...")
+        logger.info("Остановка прослушивателя горячих клавиш...")
         self._running = False
         
-        # Unregister hotkey
+        # Удалить горячую клавишу
         keyboard.remove_hotkey(self._hotkey)
         
-        logger.info("Hotkey listener stopped")
+        logger.info("Прослушиватель горячих клавиш остановлен")
 
     def _on_hotkey_pressed(self) -> None:
-        """Handle hotkey press."""
+        """Обработать нажатие горячей клавиши."""
         if not self._running:
             return
         
         try:
             self._callback()
         except Exception as e:
-            logger.exception(f"Error in hotkey callback: {e}")
+            logger.exception(f"Ошибка в callback горячей клавиши: {e}")
 

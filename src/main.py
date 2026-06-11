@@ -1,4 +1,4 @@
-"""Main entry point for the application."""
+"""Основная точка входа для приложения."""
 import logging
 import signal
 import sys
@@ -13,7 +13,7 @@ from src.services.data_storage_service import DataStorageService
 from src.services.items_catalog_service import ItemsCatalogService
 from src.utils.hotkey_listener import HotkeyListener
 
-# Configure logging
+# Настройка логирования
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -23,10 +23,10 @@ logger = logging.getLogger(__name__)
 
 
 class ScreenMarketScraper:
-    """Main application class."""
+    """Основной класс приложения."""
 
     def __init__(self):
-        """Initialize the application."""
+        """Инициализировать приложение."""
         self._ensure_directories()
         
         self.screenshot_service = ScreenshotService()
@@ -40,71 +40,71 @@ class ScreenMarketScraper:
         self._running = False
 
     def _ensure_directories(self) -> None:
-        """Ensure required directories exist."""
+        """Убедиться, что требуемые директории существуют."""
         config.SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
-        logger.info(f"Screenshots directory: {config.SCREENSHOTS_DIR}")
-        logger.info(f"Data file: {config.DATA_FILE}")
+        logger.info(f"Папка скриншотов: {config.SCREENSHOTS_DIR}")
+        logger.info(f"Файл данных: {config.DATA_FILE}")
 
     def _on_screenshot_triggered(self) -> None:
-        """Handle screenshot hotkey press."""
-        logger.info("Screenshot triggered!")
+        """Обработать нажатие горячей клавиши."""
+        logger.info("Захват скриншота!")
         
         try:
-            # Step 1: Capture screenshot
+            # Шаг 1: Захват скриншота
             screenshot_path = self.screenshot_service.capture()
-            logger.info(f"Screenshot saved: {screenshot_path}")
+            logger.info(f"Скриншот сохранён: {screenshot_path}")
             
-            # Step 2: Analyze image
+            # Шаг 2: Анализ изображения
             result = self.analysis_service.analyze(screenshot_path)
             
             if result.error:
-                logger.error(f"Analysis error: {result.error}")
+                logger.error(f"Ошибка анализа: {result.error}")
                 return
             
             if result.item:
-                # Step 3: Store data
+                # Шаг 3: Сохранение данных
                 self.storage_service.add_item(result.item)
-                logger.info(f"Item saved: {result.item.item_name}")
+                logger.info(f"Предмет сохранён: {result.item.item_name}")
             else:
-                logger.warning("No item data extracted from screenshot")
+                logger.warning("Данные предмета не извлечены из скриншота")
                 
         except Exception as e:
-            logger.exception(f"Error during screenshot processing: {e}")
+            logger.exception(f"Ошибка при обработке скриншота: {e}")
 
     def start(self) -> None:
-        """Start the application."""
-        logger.info("Starting Screen Market Scraper...")
-        logger.info(f"Press {config.HOTKEY.upper()} to capture screenshot")
-        logger.info("Press Ctrl+C to stop")
+        """Запустить приложение."""
+        logger.info("Запуск Screen Market Scraper...")
+        logger.info(f"Нажмите {config.HOTKEY.upper()} для захвата скриншота")
+        logger.info("Нажмите Ctrl+C для остановки")
         
         self._running = True
         self.hotkey_listener.start()
         
-        # Handle graceful shutdown
+        # Обработка корректного завершения
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
         
-        # Keep the main thread alive using keyboard.wait()
+        # Держать основной поток активным с помощью keyboard.wait()
         try:
             keyboard.wait()
         except KeyboardInterrupt:
             self.stop()
 
     def _signal_handler(self, signum, frame) -> None:
-        """Handle shutdown signals."""
-        logger.info(f"Received signal {signum}, shutting down...")
+        """Обработать сигналы завершения."""
+        logger.info(f"Получен сигнал {signum}, завершение работы...")
         self.stop()
 
     def stop(self) -> None:
-        """Stop the application."""
-        logger.info("Stopping Screen Market Scraper...")
+        """Остановить приложение."""
+        logger.info("Остановка Screen Market Scraper...")
         self._running = False
         self.hotkey_listener.stop()
-        logger.info("Application stopped.")
+        logger.info("Приложение остановлено.")
 
 
 def main():
-    """Application entry point."""
+    """Точка входа приложения."""
     app = ScreenMarketScraper()
     app.start()
 

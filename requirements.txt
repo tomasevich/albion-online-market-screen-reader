@@ -2,3 +2,5 @@ keyboard>=0.13.5
 mss>=9.0.1
 opencv-python>=4.8.0
 pytesseract>=0.3.10
+python-dotenv>=1.0.0
+readchar>=4.0.0

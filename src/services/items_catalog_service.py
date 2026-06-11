@@ -1,4 +1,4 @@
-"""Service for managing items catalog and enriching market data."""
+"""Сервис для управления каталогом предметов и обогащения рыночных данных."""
 import json
 import logging
 import re
@@ -11,62 +11,62 @@ logger = logging.getLogger(__name__)
 
 
 class ItemsCatalogService:
-    """Service for loading and querying items catalog."""
+    """Сервис для загрузки и поиска по каталогу предметов."""
     
     def __init__(self, catalog_path: Path = None):
         """
-        Initialize the items catalog service.
+        Инициализировать сервис каталога предметов.
         
         Args:
-            catalog_path: Path to items.json catalog file. Defaults to config.BASE_DIR/items.json.
+            catalog_path: Путь к файлу каталога items.json. По умолчанию config.BASE_DIR/items.json.
         """
         self._catalog_path = catalog_path or (config.BASE_DIR / "items.json")
         self._items_by_name: dict = {}
         self._load_catalog()
     
     def _load_catalog(self) -> None:
-        """Load items catalog and build index by name."""
+        """Загрузить каталог предметов и построить индекс по названию."""
         if not self._catalog_path.exists():
-            logger.warning(f"Items catalog not found: {self._catalog_path}")
+            logger.warning(f"Каталог предметов не найден: {self._catalog_path}")
             return
         
         try:
             with open(self._catalog_path, "r", encoding="utf-8") as f:
                 items = json.load(f)
             
-            # Build index by both English and Russian names
+            # Построить индекс по английскому и русскому названиям
             for item in items:
                 localized_names = item.get("LocalizedNames")
                 
-                # Skip items with no LocalizedNames
+                # Пропустить предметы без LocalizedNames
                 if not localized_names:
                     continue
                 
-                # Index by Russian name
+                # Индекс по русскому названию
                 ru_name = localized_names.get("RU-RU", "")
                 if ru_name:
                     self._items_by_name[ru_name.lower()] = item
                 
-                # Index by English name
+                # Индекс по английскому названию
                 en_name = localized_names.get("EN-US", "")
                 if en_name:
                     self._items_by_name[en_name.lower()] = item
             
-            logger.info(f"Loaded {len(self._items_by_name)} item names from catalog")
+            logger.info(f"Загружено {len(self._items_by_name)} названий предметов из каталога")
         except (json.JSONDecodeError, IOError) as e:
-            logger.error(f"Error loading items catalog: {e}")
+            logger.error(f"Ошибка загрузки каталога предметов: {e}")
     
     def enrich_item(self, item_name: str) -> dict:
         """
-        Enrich item name with tier, enchantment, and quality data.
+        Обогастить название предмета данными о tier, enchantment и quality.
         
         Args:
-            item_name: Name of the item (in Russian or English).
+            item_name: Название предмета (на русском или английском).
             
         Returns:
-            Dictionary with item_tier, item_enchantment, item_quality.
+            Словарь с item_tier, item_enchantment, item_quality.
         """
-        # Try to find in catalog
+        # Попробовать найти в каталоге
         item_data = self._items_by_name.get(item_name.lower())
         
         if item_data:
@@ -77,12 +77,12 @@ class ItemsCatalogService:
                 "unique_name": item_data.get("UniqueName", ""),
             }
         
-        # Fallback: try to parse tier and enchantment from item name itself
-        # This handles cases where OCR might include tier in the name
+        # Резервный метод: попытаться распарсить tier и enchantment из названия предмета
+        # Это обрабатывает случаи когда OCR может включать tier в название
         tier = self._extract_tier_from_name(item_name)
         enchantment = self._extract_enchantment_from_name(item_name)
         
-        logger.debug(f"Item '{item_name}' not found in catalog, using parsed values: tier={tier}, enchantment={enchantment}")
+        logger.debug(f"Предмет '{item_name}' не найден в каталоге, используются распарсенные значения: tier={tier}, enchantment={enchantment}")
         
         return {
             "item_tier": tier,
@@ -93,13 +93,13 @@ class ItemsCatalogService:
     
     def _extract_tier_from_name(self, item_name: str) -> int:
         """
-        Extract tier from item name (fallback method).
+        Извлечь tier из названия предмета (резервный метод).
         
         Examples:
             "T6 Battleaxe" -> 6
             "Tier 4 Bow" -> 4
         """
-        # Look for patterns like "T6", "Tier 6", etc.
+        # Искать паттерны типа "T6", "Tier 6" и т.д.
         match = re.search(r"T(\d+)|Tier\s*(\d+)", item_name, re.IGNORECASE)
         if match:
             return int(match.group(1) or match.group(2))
@@ -107,7 +107,7 @@ class ItemsCatalogService:
     
     def _extract_enchantment_from_name(self, item_name: str) -> int:
         """
-        Extract enchantment from item name (fallback method).
+        Извлечь enchantment из названия предмета (резервный метод).
         
         Examples:
             "Battleaxe @1" -> 1
@@ -120,17 +120,17 @@ class ItemsCatalogService:
     
     def get_item_info(self, item_name: str) -> Optional[dict]:
         """
-        Get full item information from catalog.
+        Получить полную информацию о предмете из каталога.
         
         Args:
-            item_name: Name of the item.
+            item_name: Название предмета.
             
         Returns:
-            Full item data or None if not found.
+            Полные данные предмета или None если не найден.
         """
         return self._items_by_name.get(item_name.lower())
     
     def reload_catalog(self) -> None:
-        """Reload catalog from file (useful for dynamic updates)."""
+        """Перезагрузить каталог из файла (полезно для динамических обновлений)."""
         self._items_by_name.clear()
         self._load_catalog()
