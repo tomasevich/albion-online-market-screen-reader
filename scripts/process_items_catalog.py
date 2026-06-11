@@ -51,7 +51,11 @@ def process_items_catalog(input_path: Path, output_path: Path) -> None:
     
     for item in items:
         unique_name = item.get("UniqueName", "")
-        localized_names = item.get("LocalizedNames", {})
+        localized_names = item.get("LocalizedNames")
+        
+        # Skip items with no LocalizedNames
+        if not localized_names:
+            continue
         
         # Keep only EN-US and RU-RU
         en_name = localized_names.get("EN-US", "")
