@@ -38,15 +38,15 @@ class AppConfig:
     roi_coordinates: dict = field(default_factory=dict)
     
     # Debug mode - save images with ROI overlays
-    DEBUG_MODE: bool = True
+    DEBUG_MODE: bool = False
     
     # Color ranges for region detection (BGR format for OpenCV)
+    # These are example ranges - should be calibrated with example.png
     COLOR_RANGES = {
         "title": {"lower": (100, 100, 200), "upper": (200, 200, 255)},     # Blue
         "buy_price": {"lower": (0, 0, 0), "upper": (100, 100, 150)},       # Red (in BGR)
         "sell_price": {"lower": (0, 100, 0), "upper": (100, 200, 100)},    # Green
         "avg_price": {"lower": (100, 0, 100), "upper": (200, 100, 200)},   # Purple
-        "tier": {"lower": (0, 100, 150), "upper": (50, 200, 255)},         # Orange
     }
     
     def __post_init__(self):

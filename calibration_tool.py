@@ -42,7 +42,6 @@ class ROISelector:
             "buy_price",  # Красный блок - цена покупки
             "sell_price", # Зелёный блок - цена продажи
             "avg_price",  # Фиолетовый блок - средняя цена
-            "tier",       # Оранжевый блок - тир
         ]
         
         self.current_roi_index = 0
@@ -54,7 +53,6 @@ class ROISelector:
             "buy_price": (0, 0, 255),  # Red
             "sell_price": (0, 255, 0), # Green
             "avg_price": (255, 0, 255),# Purple
-            "tier": (0, 165, 255),     # Orange
         }
 
     def _get_current_roi_name(self) -> str:
