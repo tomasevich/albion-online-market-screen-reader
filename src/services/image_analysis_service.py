@@ -78,7 +78,6 @@ class ImageAnalysisService:
         logger.debug(f"Extracted text - Buy price: '{extracted.buy_price_text}'")
         logger.debug(f"Extracted text - Sell price: '{extracted.sell_price_text}'")
         logger.debug(f"Extracted text - Avg price: '{extracted.avg_price_text}'")
-        logger.debug(f"Extracted text - Tier: '{extracted.tier_text}'")
 
     def _extract_text_from_regions(self, image: np.ndarray) -> ExtractedText:
         """
@@ -127,15 +126,6 @@ class ImageAnalysisService:
                 avg_roi = self._get_roi(image, rois["avg_price"])
                 extracted.avg_price_text = self._ocr_text(avg_roi)
             
-            # Tier region
-            if "tier" in rois and self._is_valid_roi(rois["tier"]):
-                tier_roi = self._get_roi(image, rois["tier"])
-                extracted.tier_text = self._ocr_text(tier_roi)
-            
-            # Extract tier from title if not found
-            if not extracted.tier_text:
-                extracted.tier_text = self._extract_tier(extracted.title_text)
-                
         else:
             # Fallback: Use relative coordinates (deprecated, but for backwards compatibility)
             logger.warning("No valid ROI coordinates found, using fallback method")
@@ -161,9 +151,6 @@ class ImageAnalysisService:
             extracted.sell_price_text = str(prices.get("sell", ""))
             extracted.avg_price_text = str(prices.get("avg", ""))
             
-            # Tier extraction (try to find Roman numerals)
-            extracted.tier_text = self._extract_tier(extracted.title_text)
-        
         return extracted
 
     def _is_valid_roi(self, roi: dict) -> bool:
@@ -221,7 +208,6 @@ class ImageAnalysisService:
         text_lines = [
             f"Title: {extracted.title_text[:50]}",
             f"Buy: {extracted.buy_price_text} | Sell: {extracted.sell_price_text} | Avg: {extracted.avg_price_text}",
-            f"Tier: {extracted.tier_text}"
         ]
         
         for i, line in enumerate(text_lines):
@@ -360,21 +346,6 @@ class ImageAnalysisService:
         
         return prices
 
-    def _extract_tier(self, text: str) -> str:
-        """
-        Extract tier (Roman numerals) from text.
-        
-        Args:
-            text: Text to search for tier.
-            
-        Returns:
-            Tier string (e.g., "I", "II", "III", etc.) or empty string.
-        """
-        # Look for Roman numerals
-        roman_pattern = r'\b(?:I{1,3}|IV|V|VI{0,3}|IX|X)\b'
-        match = re.search(roman_pattern, text)
-        return match.group(0) if match else ""
-
     def _parse_market_item(
         self, 
         extracted: ExtractedText, 
@@ -420,7 +391,6 @@ class ImageAnalysisService:
             sell_price=sell_price,
             buy_price=buy_price,
             average_price=avg_price,
-            tier=extracted.tier_text,
             screenshot_date=screenshot_date
         )
 

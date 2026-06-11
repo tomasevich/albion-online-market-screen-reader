@@ -12,7 +12,6 @@ class MarketItem:
     sell_price: int
     buy_price: int
     average_price: int
-    tier: str
     screenshot_date: str
     
     def to_dict(self) -> dict:
@@ -22,7 +21,6 @@ class MarketItem:
             "sell_price": self.sell_price,
             "buy_price": self.buy_price,
             "average_price": self.average_price,
-            "tier": self.tier,
             "screenshot_date": self.screenshot_date,
         }
     
@@ -34,7 +32,6 @@ class MarketItem:
             sell_price=data["sell_price"],
             buy_price=data["buy_price"],
             average_price=data["average_price"],
-            tier=data.get("tier", ""),
             screenshot_date=data["screenshot_date"],
         )
 
@@ -47,7 +44,6 @@ class ExtractedText:
     buy_price_text: str = ""
     sell_price_text: str = ""
     avg_price_text: str = ""
-    tier_text: str = ""
 
 
 @dataclass
