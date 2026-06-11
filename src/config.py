@@ -38,7 +38,7 @@ class AppConfig:
     roi_coordinates: dict = field(default_factory=dict)
     
     # Debug mode - save images with ROI overlays
-    DEBUG_MODE: bool = True
+    DEBUG_MODE: bool = False
     
     # Color ranges for region detection (BGR format for OpenCV)
     # These are example ranges - should be calibrated with example.png
