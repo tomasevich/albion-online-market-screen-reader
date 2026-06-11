@@ -14,7 +14,7 @@ class AppConfig:
     EXAMPLE_FILE: Path = BASE_DIR / "example.png"
     
     # Hotkey configuration
-    HOTKEY: str = "printscreen"
+    HOTKEY: str = "print_screen"
     
     # File naming format for screenshots
     SCREENSHOT_FORMAT: str = "%Y-%m-%d-%H-%M-%S.png"
@@ -28,6 +28,9 @@ class AppConfig:
     
     # OCR settings
     OCR_LANG: str = "rus+eng"  # Russian + English
+    
+    # Tesseract path (Windows default installation)
+    TESSERACT_PATH: str = r"C:\Users\vyach\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
     
     # Color ranges for region detection (BGR format for OpenCV)
     # These are example ranges - should be calibrated with example.png

@@ -1,6 +1,7 @@
 """Service for analyzing screenshots and extracting data."""
 import logging
 import re
+from datetime import datetime
 from pathlib import Path
 
 import cv2
@@ -11,6 +12,9 @@ from src.config import config
 from src.models import AnalysisResult, ExtractedText, MarketItem
 
 logger = logging.getLogger(__name__)
+
+# Set Tesseract path
+pytesseract.pytesseract.tesseract_cmd = config.TESSERACT_PATH
 
 
 class ImageAnalysisService:
