@@ -27,7 +27,7 @@ def clear_screen():
 def draw_menu(options: list, selected: int):
     """Отрисовать меню с выделением выбранного пункта."""
     print("\n╔═══════════════════════════════════════════════╗")
-    print("║    Screen Market Scraper — Главное меню       ║")
+    print("║    Albion Online Market Screen Reader         ║")
     print("╠═══════════════════════════════════════════════╣")
     
     for i, option in enumerate(options):

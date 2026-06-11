@@ -69,7 +69,7 @@ class ScreenMarketScraper:
 
     def start(self) -> None:
         """Запустить приложение."""
-        logger.info("Запуск Screen Market Scraper...")
+        logger.info("Запуск Albion Online Market Screen Reader...")
         logger.info(f"Нажмите {config.HOTKEY.upper()} для захвата скриншота")
         logger.info("Нажмите Ctrl+C для остановки")
         
@@ -93,7 +93,7 @@ class ScreenMarketScraper:
 
     def stop(self) -> None:
         """Остановить приложение."""
-        logger.info("Остановка Screen Market Scraper...")
+        logger.info("Остановка Albion Online Market Screen Reader...")
         self._running = False
         self.hotkey_listener.stop()
         logger.info("Приложение остановлено.")

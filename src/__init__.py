@@ -1,1 +1,1 @@
-"""Screen Market Scraper - Package."""
+"""Albion Online Market Screen Reader - Package."""
