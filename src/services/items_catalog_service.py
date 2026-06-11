@@ -14,7 +14,51 @@ logger = get_logger(__name__)
 
 
 # Порог совпадения для нечёткого поиска (0-100)
-FUZZY_MATCH_THRESHOLD = 75
+FUZZY_MATCH_THRESHOLD = 60  # Понижен для учёта OCR-ошибок
+
+
+# Таблица замены визуально похожих латинских символов на кириллические
+LATIN_TO_CYRILLIC = {
+    'C': 'С',  # Latin C -> Cyrillic С
+    'c': 'с',  # Latin c -> Cyrillic с
+    'O': 'О',  # Latin O -> Cyrillic О
+    'o': 'о',  # Latin o -> Cyrillic о
+    'B': 'В',  # Latin B -> Cyrillic В
+    'b': 'ь',  # Latin b -> Cyrillic ь (мягкий знак)
+    'E': 'Е',  # Latin E -> Cyrillic Е
+    'e': 'е',  # Latin e -> Cyrillic е
+    'H': 'Н',  # Latin H -> Cyrillic Н
+    'h': 'н',  # Latin h -> Cyrillic н
+    'y': 'у',  # Latin y -> Cyrillic у
+    'x': 'х',  # Latin x -> Cyrillic х
+    'X': 'Х',  # Latin X -> Cyrillic Х
+    'I': 'І',  # Latin I -> Cyrillic І
+    'i': 'і',  # Latin i -> Cyrillic і
+    'a': 'а',  # Latin a -> Cyrillic а
+    'A': 'А',  # Latin A -> Cyrillic А
+    'p': 'р',  # Latin p -> Cyrillic р
+    'P': 'Р',  # Latin P -> Cyrillic Р
+    'K': 'К',  # Latin K -> Cyrillic К
+    'k': 'к',  # Latin k -> Cyrillic к
+    'M': 'М',  # Latin M -> Cyrillic М
+    'm': 'м',  # Latin m -> Cyrillic м
+    'T': 'Т',  # Latin T -> Cyrillic Т
+    't': 'т',  # Latin t -> Cyrillic т
+    'Y': 'У',  # Latin Y -> Cyrillic У
+    'r': 'г',  # Latin r -> Cyrillic г (иногда)
+    's': 'з',  # Latin s -> Cyrillic з (иногда)
+    'l': 'л',  # Latin l -> Cyrillic л
+    'L': 'Л',  # Latin L -> Cyrillic Л
+    'j': 'ј',  # Latin j -> Cyrillic ј
+    'J': 'Ј',  # Latin J -> Cyrillic Ј
+    'w': 'ш',  # Latin w -> Cyrillic ш (визуально)
+    'W': 'Ш',  # Latin W -> Cyrillic Ш
+    'g': 'д',  # Latin g -> Cyrillic д (иногда)
+}
+
+
+# Невидимые символы и артефакты для удаления
+INVISIBLE_CHARS_PATTERN = re.compile(r'^[\u2000-\u206F\u0000-\u001F\u00A0\u200B\uFEFF‚]+')
 
 
 class ItemsCatalogService:
@@ -73,8 +117,16 @@ class ItemsCatalogService:
         Returns:
             Словарь с item_tier, item_enchantment, item_quality.
         """
+        # Очистить название от артефактов и невидимых символов
+        cleaned_name = self._clean_text(item_name)
+        
+        # Транслитерировать латиницу в кириллицу (для OCR-ошибок)
+        transliterated_name = self._transliterate_latin_to_cyrillic(cleaned_name)
+        
         # Нормализовать название: убрать лишние пробелы и привести к нижнему регистру
-        normalized_name = item_name.strip().lower()
+        normalized_name = transliterated_name.strip().lower()
+        
+        logger.debug(f"Очистка: '{item_name}' -> '{cleaned_name}' -> '{transliterated_name}' -> '{normalized_name}'")
         
         # Попробовать найти в каталоге по полному совпадению
         item_data = self._items_by_name.get(normalized_name)
@@ -125,6 +177,47 @@ class ItemsCatalogService:
             "item_quality": 0,
             "unique_name": "",
         }
+    
+    def _clean_text(self, text: str) -> str:
+        """
+        Очистить текст от невидимых символов и артефактов кодировки.
+        
+        Args:
+            text: Исходный текст.
+            
+        Returns:
+            Очищенный текст.
+        """
+        # Удалить невидимые символы в начале строки
+        cleaned = INVISIBLE_CHARS_PATTERN.sub('', text)
+        # Удалить лишние пробелы
+        cleaned = ' '.join(cleaned.split())
+        return cleaned.strip()
+    
+    def _transliterate_latin_to_cyrillic(self, text: str) -> str:
+        """
+        Заменить визуально похожие латинские символы на кириллические.
+        
+        Args:
+            text: Текст с возможными латинскими символами.
+            
+        Returns:
+            Текст с заменёнными символами.
+        """
+        result = []
+        changed = False
+        
+        for char in text:
+            if char in LATIN_TO_CYRILLIC:
+                result.append(LATIN_TO_CYRILLIC[char])
+                changed = True
+            else:
+                result.append(char)
+        
+        if changed:
+            logger.debug(f"Транслитерация: '{text}' -> {''.join(result)}'")
+        
+        return ''.join(result)
     
     def _partial_search(self, normalized_name: str) -> Optional[dict]:
         """
@@ -179,14 +272,17 @@ class ItemsCatalogService:
         
         # Искать лучшее нечёткое совпадение
         for name, item_data in self._items_by_name.items():
-            # Рассчитать коэффициент схожести
+            # Рассчитать коэффициент схожести (обычный)
             score = fuzz.ratio(clean_name, name)
             
             # Также проверить частичное соотношение (для случаев когда одно название короче)
             partial_score = fuzz.partial_ratio(clean_name, name)
             
-            # Использовать максимальный из двух показателей
-            final_score = max(score, partial_score)
+            # Использовать token_sort_ratio для игнорирования порядка слов
+            token_sort_score = fuzz.token_sort_ratio(clean_name, name)
+            
+            # Использовать максимальный из всех показателей
+            final_score = max(score, partial_score, token_sort_score)
             
             if final_score > best_score and final_score >= FUZZY_MATCH_THRESHOLD:
                 best_score = final_score
