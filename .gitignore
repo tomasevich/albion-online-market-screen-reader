@@ -22,7 +22,7 @@ Thumbs.db
 *.log
 
 # Data files
-market_data.json
+market_data.csv
 screenshots/
 
 # Installers
