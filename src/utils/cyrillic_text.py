@@ -30,7 +30,7 @@ def put_cyrillic_text(
     text: str,
     position: tuple[int, int],
     font_size: int = 20,
-    color: tuple[int, int, int] = (255, 255, 255),
+    color: tuple[int, int, int] = (0, 255, 255),  # Жёлтый по умолчанию (BGR)
     font_path: str | None = None
 ) -> np.ndarray:
     """
@@ -45,15 +45,18 @@ def put_cyrillic_text(
         font_path: Путь к TTF-шрифту. Если None, используется шрифт по умолчанию.
     
     Returns:
-        Изображение с нанесённым текстом.
+        Изображение с нанесённым текстом (копия изображения).
     
     Example:
         >>> image = cv2.imread("image.png")
         >>> image = put_cyrillic_text(image, "Привет", (50, 50), font_size=24)
     """
+    # Создать копию изображения для модификации
+    result = image.copy()
+    
     # Конвертировать BGR -> RGB для PIL
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    pil_image = Image.fromarray(image_rgb)
+    result_rgb = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+    pil_image = Image.fromarray(result_rgb)
     
     # Создать объект для рисования
     draw = ImageDraw.Draw(pil_image)
@@ -75,10 +78,10 @@ def put_cyrillic_text(
     # Нарисовать текст
     draw.text(position, text, font=font, fill=color_rgb)
     
-    # Конвертировать обратно в OpenCV формат
-    image_with_text = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+    # Конвертировать обратно в OpenCV формат (BGR)
+    result = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
     
-    return image_with_text
+    return result
 
 
 def put_cyrillic_text_with_background(

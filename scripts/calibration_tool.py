@@ -19,7 +19,7 @@ sys.path.insert(0, str(project_root))
 
 from src.config import config
 from src.logging_config import setup_logging, get_logger
-from src.utils.cyrillic_text import put_cyrillic_text
+from src.utils.cyrillic_text import put_cyrillic_text, DEFAULT_FONT
 
 # Настроить централизованное логирование
 setup_logging()
@@ -54,7 +54,8 @@ class ROISelector:
         ]
         
         self.current_roi_index = 0
-        self.window_name = "Селектор ROI - Выберите области"
+        # Заголовок окна на латинице (Windows не поддерживает кириллицу в namedWindow)
+        self.window_name = "ROI Selector - Select areas"
         
         # Цвета для каждой ROI (формат BGR)
         self.colors = {
@@ -104,12 +105,13 @@ class ROISelector:
                 if self.current_roi_index >= len(self.roi_names):
                     logger.info("Все области выбраны!")
                     self._save_config()
+                    # Сообщение на латинице для совместимости
                     put_cyrillic_text(
                         self.image,
-                        "ГОТОВО - нажмите 'q' для выхода",
+                        "DONE - press 'q' to exit",
                         (50, 50),
                         font_size=24,
-                        color=(0, 255, 0)
+                        color=(0, 255, 0)  # BGR: зелёный
                     )
                 
                 self.current_roi = None
@@ -157,6 +159,7 @@ class ROISelector:
         logger.info(f"Открытие изображения: {self.image_path}")
         logger.info(f"Выберите области в следующем порядке: {', '.join(self.roi_names)}")
         logger.info("Нажмите и перетащите для выбора области, затем отпустите кнопку мыши.")
+        logger.info(f"Шрифт: {DEFAULT_FONT}")  # Отладка
         
         cv2.namedWindow(self.window_name)
         cv2.setMouseCallback(self.window_name, self._mouse_callback)
@@ -167,19 +170,20 @@ class ROISelector:
             current_name = self._get_current_roi_name()
             
             if current_name:
+                # Жёлтый текст с чёрной обводкой для контраста
                 put_cyrillic_text(
                     display_image,
                     f"Выберите: {current_name}",
                     (50, 50),
                     font_size=28,
-                    color=(0, 255, 255)
+                    color=(0, 255, 255)  # BGR: жёлтый
                 )
                 put_cyrillic_text(
                     display_image,
                     f"Прогресс: {self.current_roi_index}/{len(self.roi_names)}",
                     (50, 90),
                     font_size=20,
-                    color=(255, 255, 255)
+                    color=(255, 255, 255)  # BGR: белый
                 )
             
             cv2.imshow(self.window_name, display_image)
