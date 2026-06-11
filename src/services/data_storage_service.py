@@ -12,10 +12,17 @@ from src.services.items_catalog_service import ItemsCatalogService
 logger = get_logger(__name__)
 
 
-# Поля CSV файла
+# Поля CSV файла (новый порядок: дата, город, предмет, тир, зачарование, качество, цены)
 CSV_COLUMNS = [
-    "item_name", "sell_price", "buy_price", "average_price",
-    "screenshot_date", "item_tier", "item_enchantment", "item_quality"
+    "screenshot_date",   # 1. Дата
+    "city",              # 2. Город
+    "item_name",         # 3. Предмет
+    "item_tier",         # 4. Тир
+    "item_enchantment",  # 5. Зачарование
+    "item_quality",      # 6. Качество
+    "sell_price",        # 7. Цена продажи
+    "buy_price",         # 8. Цена покупки
+    "average_price",     # 9. Средняя цена
 ]
 
 
@@ -51,11 +58,12 @@ class DataStorageService:
                 encoding='utf-8-sig',  # BOM для совместимости с Excel
                 sep=';',  # Разделитель для русскоязычного Excel
                 dtype={
+                    'screenshot_date': str,
+                    'city': str,
                     'item_name': str,
                     'sell_price': int,
                     'buy_price': int,
                     'average_price': int,
-                    'screenshot_date': str,
                     'item_tier': int,
                     'item_enchantment': int,
                     'item_quality': int
@@ -107,16 +115,17 @@ class DataStorageService:
             item.item_enchantment = enrichment["item_enchantment"]
             item.item_quality = enrichment["item_quality"]
         
-        # Создать новую строку данных с явными типами
+        # Создать новую строку данных с явными типами (НОВЫЙ ПОРЯДОК)
         new_row = pd.DataFrame([{
-            'item_name': str(item.item_name),
-            'sell_price': int(item.sell_price),
-            'buy_price': int(item.buy_price),
-            'average_price': int(item.average_price),
             'screenshot_date': str(item.screenshot_date),
+            'city': str(item.city),
+            'item_name': str(item.item_name),
             'item_tier': int(item.item_tier),
             'item_enchantment': int(item.item_enchantment),
-            'item_quality': int(item.item_quality)
+            'item_quality': int(item.item_quality),
+            'sell_price': int(item.sell_price),
+            'buy_price': int(item.buy_price),
+            'average_price': int(item.average_price)
         }], columns=CSV_COLUMNS)
         
         # Добавить к DataFrame

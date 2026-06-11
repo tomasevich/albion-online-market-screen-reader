@@ -8,6 +8,7 @@ from typing import Optional
 class MarketItem:
     """Represents a market item extracted from screenshot."""
     
+    city: str
     item_name: str
     sell_price: int
     buy_price: int
@@ -20,20 +21,22 @@ class MarketItem:
     def to_dict(self) -> dict:
         """Convert to dictionary for CSV serialization."""
         return {
-            "item_name": self.item_name,
-            "sell_price": self.sell_price,
-            "buy_price": self.buy_price,
-            "average_price": self.average_price,
             "screenshot_date": self.screenshot_date,
+            "city": self.city,
+            "item_name": self.item_name,
             "item_tier": self.item_tier,
             "item_enchantment": self.item_enchantment,
             "item_quality": self.item_quality,
+            "sell_price": self.sell_price,
+            "buy_price": self.buy_price,
+            "average_price": self.average_price,
         }
     
     @classmethod
     def from_dict(cls, data: dict) -> "MarketItem":
         """Create instance from dictionary."""
         return cls(
+            city=data.get("city", ""),
             item_name=data["item_name"],
             sell_price=data["sell_price"],
             buy_price=data["buy_price"],
@@ -49,6 +52,7 @@ class MarketItem:
 class ExtractedText:
     """Raw extracted text from image regions."""
     
+    city_text: str = ""
     title_text: str = ""
     buy_price_text: str = ""
     sell_price_text: str = ""

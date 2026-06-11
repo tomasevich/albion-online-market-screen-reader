@@ -84,9 +84,10 @@ class TestParseMarketItem:
         screenshot = tmp_path / "2026-06-11-19-00-00.png"
         screenshot.touch()
         
-        # Создать ExtractedText с артефактом
+        # Создать ExtractedText с артефактом и городом
         from src.models import ExtractedText
         extracted = ExtractedText()
+        extracted.city_text = "Martlock"
         extracted.title_text = "‚Бревна сосны"
         extracted.buy_price_text = "100"
         extracted.sell_price_text = "150"
@@ -95,6 +96,7 @@ class TestParseMarketItem:
         item = service._parse_market_item(extracted, screenshot)
         
         assert item is not None
+        assert item.city == "Martlock"
         assert item.item_name == "Бревна сосны"  # Без артефакта!
         assert item.buy_price == 100
         assert item.sell_price == 150
@@ -127,6 +129,7 @@ class TestParseMarketItem:
         
         from src.models import ExtractedText
         extracted = ExtractedText()
+        extracted.city_text = "Lymhurst"
         extracted.title_text = "A"  # Слишком короткое
         extracted.buy_price_text = "100"
         extracted.sell_price_text = "150"
@@ -135,6 +138,25 @@ class TestParseMarketItem:
         item = service._parse_market_item(extracted, screenshot)
         
         assert item is None
+    
+    def test_parse_item_rejects_empty_city(self, tmp_path):
+        """Отклонение при пустом городе (обязательное поле)."""
+        service = ImageAnalysisService()
+        
+        screenshot = tmp_path / "2026-06-11-19-00-04.png"
+        screenshot.touch()
+        
+        from src.models import ExtractedText
+        extracted = ExtractedText()
+        extracted.city_text = ""  # Пустой город
+        extracted.title_text = "Бревна сосны"
+        extracted.buy_price_text = "100"
+        extracted.sell_price_text = "150"
+        extracted.avg_price_text = "125"
+        
+        item = service._parse_market_item(extracted, screenshot)
+        
+        assert item is None  # Должен вернуть None
     
     def test_parse_item_default_prices(self, tmp_path):
         """Цены по умолчанию при пустых значениях."""
@@ -145,6 +167,7 @@ class TestParseMarketItem:
         
         from src.models import ExtractedText
         extracted = ExtractedText()
+        extracted.city_text = "Thetford"
         extracted.title_text = "Бревна сосны"
         extracted.buy_price_text = ""
         extracted.sell_price_text = ""
@@ -153,6 +176,7 @@ class TestParseMarketItem:
         item = service._parse_market_item(extracted, screenshot)
         
         assert item is not None
+        assert item.city == "Thetford"
         assert item.buy_price == 0
         assert item.sell_price == 0
         assert item.average_price == 0
@@ -196,7 +220,7 @@ class TestSafeParseInt:
         service = ImageAnalysisService()
         result = service._safe_parse_int(None)
         assert result == 0
-    
+
     def test_parse_int_invalid(self):
         """Парсинг некорректной строки."""
         service = ImageAnalysisService()

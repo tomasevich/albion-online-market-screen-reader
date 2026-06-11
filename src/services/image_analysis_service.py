@@ -84,6 +84,7 @@ class ImageAnalysisService:
 
     def _log_extracted_text(self, extracted: ExtractedText) -> None:
         """Вывести извлечённый текст для отладки."""
+        logger.debug(f"Извлечённый текст - Город: '{extracted.city_text}'")
         logger.debug(f"Извлечённый текст - Название: '{extracted.title_text}'")
         logger.debug(f"Извлечённый текст - Цена покупки: '{extracted.buy_price_text}'")
         logger.debug(f"Извлечённый текст - Цена продажи: '{extracted.sell_price_text}'")
@@ -115,6 +116,11 @@ class ImageAnalysisService:
         if has_valid_rois:
             # Использовать настроенные координаты ROI
             logger.info("Использование настроенных координат ROI")
+            
+            # Область города (ПЕРВАЯ, английский язык)
+            if "city" in rois and self._is_valid_roi(rois["city"]):
+                city_roi = self._get_roi(image, rois["city"])
+                extracted.city_text = self._ocr_text(city_roi, lang="eng")
             
             # Область названия
             if "title" in rois and self._is_valid_roi(rois["title"]):
@@ -236,12 +242,13 @@ class ImageAnalysisService:
         cv2.imwrite(str(debug_path), debug_image)
         logger.debug(f"Отладочное изображение сохранено: {debug_path}")
 
-    def _ocr_text(self, image_roi: np.ndarray) -> str:
+    def _ocr_text(self, image_roi: np.ndarray, lang: str = None) -> str:
         """
         Выполнить OCR для области изображения с предобработкой.
         
         Args:
             image_roi: Область интереса.
+            lang: Язык OCR (по умолчанию config.OCR_LANG).
             
         Returns:
             Извлечённая строка текста.
@@ -280,7 +287,7 @@ class ImageAnalysisService:
         try:
             text = pytesseract.image_to_string(
                 cleaned,
-                lang=config.OCR_LANG,
+                lang=lang or config.OCR_LANG,
                 config=self._TESSERACT_CONFIG
             ).strip()
         except pytesseract.pytesseract.TesseractError as e:
@@ -384,6 +391,9 @@ class ImageAnalysisService:
         # Очистить название предмета - убрать артефакты OCR и невидимые символы
         item_name = self._clean_item_name(extracted.title_text)
         
+        # Очистить город (убрать лишние пробелы)
+        city = extracted.city_text.strip()
+        
         # Отфильтровать распространённые ошибки OCR
         if item_name in ["oy", "оу", "ou", "00", "OO", "qq", ""]:
             logger.warning(f"Обнаружено некорректное название предмета (ошибка OCR): '{item_name}'")
@@ -391,6 +401,11 @@ class ImageAnalysisService:
         
         if len(item_name) < 2:
             logger.warning(f"Название предмета слишком короткое: '{item_name}'")
+            return None
+        
+        # Проверить город (обязательное поле)
+        if not city:
+            logger.warning("Город не распознан (обязательное поле)")
             return None
         
         # Создать временную метку из имени файла
@@ -407,6 +422,7 @@ class ImageAnalysisService:
         avg_price = self._safe_parse_int(extracted.avg_price_text)
         
         return MarketItem(
+            city=city,
             item_name=item_name,
             sell_price=sell_price,
             buy_price=buy_price,

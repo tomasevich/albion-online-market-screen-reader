@@ -19,14 +19,15 @@ class TestConvertDtypes:
         """Преобразование строки в int."""
         service = DataStorageService()
         service._df = pd.DataFrame({
+            'screenshot_date': ['2026-06-11', '2026-06-11', '2026-06-11'],
+            'city': ['Martlock', 'Thetford', 'Lymhurst'],
+            'item_name': ['Лен', 'Пенька', 'Хлопок'],
             'sell_price': ['100', '200', '300'],
             'buy_price': ['150', '250', '350'],
             'average_price': ['125', '225', '325'],
             'item_tier': ['2', '3', '4'],
             'item_enchantment': ['0', '1', '2'],
-            'item_quality': ['0', '0', '0'],
-            'item_name': ['Лен', 'Пенька', 'Хлопок'],
-            'screenshot_date': ['2026-06-11', '2026-06-11', '2026-06-11']
+            'item_quality': ['0', '0', '0']
         })
         
         service._convert_dtypes()
@@ -39,14 +40,15 @@ class TestConvertDtypes:
         """Преобразование None/NaN в 0."""
         service = DataStorageService()
         service._df = pd.DataFrame({
+            'screenshot_date': ['2026-06-11', '2026-06-11', '2026-06-11'],
+            'city': ['Martlock', 'Thetford', 'Lymhurst'],
+            'item_name': ['Лен', 'Пенька', 'Хлопок'],
             'sell_price': [100, None, 300],
             'buy_price': [150, 250, None],
             'average_price': [None, None, None],
             'item_tier': [2, 0, 4],
             'item_enchantment': [0, 1, 0],
-            'item_quality': [0, 0, 0],
-            'item_name': ['Лен', 'Пенька', 'Хлопок'],
-            'screenshot_date': ['2026-06-11', '2026-06-11', '2026-06-11']
+            'item_quality': [0, 0, 0]
         })
         
         service._convert_dtypes()
@@ -59,14 +61,15 @@ class TestConvertDtypes:
         """Преобразование float в int."""
         service = DataStorageService()
         service._df = pd.DataFrame({
+            'screenshot_date': ['2026-06-11', '2026-06-11', '2026-06-11'],
+            'city': ['Martlock', 'Thetford', 'Lymhurst'],
+            'item_name': ['Лен', 'Пенька', 'Хлопок'],
             'sell_price': [100.5, 200.9, 300.1],
             'buy_price': [150.0, 250.5, 350.9],
             'average_price': [125.5, 225.5, 325.5],
             'item_tier': [2.0, 3.0, 4.0],
             'item_enchantment': [0.0, 1.0, 2.0],
-            'item_quality': [0.0, 0.0, 0.0],
-            'item_name': ['Лен', 'Пенька', 'Хлопок'],
-            'screenshot_date': ['2026-06-11', '2026-06-11', '2026-06-11']
+            'item_quality': [0.0, 0.0, 0.0]
         })
         
         service._convert_dtypes()
@@ -98,11 +101,12 @@ class TestSaveCsvFormat:
         csv_file = tmp_path / "test.csv"
         service = DataStorageService(data_file=csv_file)
         service._df = pd.DataFrame([{
+            'screenshot_date': '2026-06-11T14:30:45',
+            'city': 'Martlock',
             'item_name': 'Бревна сосны',
             'sell_price': 100,
             'buy_price': 150,
             'average_price': 125,
-            'screenshot_date': '2026-06-11',
             'item_tier': 4,
             'item_enchantment': 0,
             'item_quality': 0
@@ -123,11 +127,12 @@ class TestSaveCsvFormat:
         csv_file = tmp_path / "test.csv"
         service = DataStorageService(data_file=csv_file)
         service._df = pd.DataFrame([{
+            'screenshot_date': '2026-06-11T14:30:45',
+            'city': 'Martlock',
             'item_name': 'Бревна сосны',
             'sell_price': 100,
             'buy_price': 150,
             'average_price': 125,
-            'screenshot_date': '2026-06-11',
             'item_tier': 4,
             'item_enchantment': 0,
             'item_quality': 0
@@ -152,11 +157,12 @@ class TestSaveCsvFormat:
         csv_file = tmp_path / "test.csv"
         service = DataStorageService(data_file=csv_file)
         service._df = pd.DataFrame([{
+            'screenshot_date': '2026-06-11T14:30:45',
+            'city': 'Fort Sterling',
             'item_name': 'Бревна сосны IV',
             'sell_price': 100,
             'buy_price': 150,
             'average_price': 125,
-            'screenshot_date': '2026-06-11',
             'item_tier': 4,
             'item_enchantment': 0,
             'item_quality': 0
@@ -180,11 +186,12 @@ class TestSaveCsvFormat:
         csv_file = tmp_path / "test.csv"
         service = DataStorageService(data_file=csv_file)
         service._df = pd.DataFrame([{
+            'screenshot_date': '2026-06-11T14:30:45',
+            'city': 'Martlock',
             'item_name': 'Лен',
             'sell_price': 50,
             'buy_price': 55,
             'average_price': 52,
-            'screenshot_date': '2026-06-11',
             'item_tier': 3,
             'item_enchantment': 0,
             'item_quality': 0
@@ -196,6 +203,49 @@ class TestSaveCsvFormat:
             # Должен быть \n, не \r\n
             assert b'\r\n' not in content
             assert b'\n' in content
+
+
+class TestCsvColumnOrder:
+    """Тесты порядка столбцов CSV."""
+    
+    def test_csv_columns_order(self):
+        """Порядок столбцов CSV соответствует спецификации."""
+        expected_columns = [
+            "screenshot_date",   # 1. Дата
+            "city",              # 2. Город
+            "item_name",         # 3. Предмет
+            "item_tier",         # 4. Тир
+            "item_enchantment",  # 5. Зачарование
+            "item_quality",      # 6. Качество
+            "sell_price",        # 7. Цена продажи
+            "buy_price",         # 8. Цена покупки
+            "average_price",     # 9. Средняя цена
+        ]
+        
+        assert CSV_COLUMNS == expected_columns
+    
+    def test_save_column_order(self, tmp_path):
+        """Сохранение CSV с правильным порядком столбцов."""
+        csv_file = tmp_path / "test.csv"
+        service = DataStorageService(data_file=csv_file)
+        service._df = pd.DataFrame([{
+            'screenshot_date': '2026-06-11T14:30:45',
+            'city': 'Martlock',
+            'item_name': 'Лен',
+            'item_tier': 3,
+            'item_enchantment': 0,
+            'item_quality': 0,
+            'sell_price': 50,
+            'buy_price': 55,
+            'average_price': 52
+        }])
+        service._save_data()
+        
+        # Прочитать первую строку и проверить порядок
+        with open(csv_file, 'r', encoding='utf-8-sig') as f:
+            header = f.readline().strip()
+            # Проверить что header содержит правильный порядок (колонки в кавычках)
+            assert '"screenshot_date";"city";"item_name";"item_tier";"item_enchantment";"item_quality";"sell_price";"buy_price";"average_price"' == header
 
 
 class TestDataStorageService:
@@ -215,11 +265,12 @@ class TestDataStorageService:
         
         # Создать тестовый CSV в Excel-формате (UTF-8 с BOM, разделитель ;)
         df = pd.DataFrame([{
+            'screenshot_date': '2026-06-11T14:30:45',
+            'city': 'Martlock',
             'item_name': 'Лен',
             'sell_price': 50,
             'buy_price': 55,
             'average_price': 52,
-            'screenshot_date': '2026-06-11',
             'item_tier': 3,
             'item_enchantment': 0,
             'item_quality': 0
@@ -231,6 +282,7 @@ class TestDataStorageService:
         
         assert len(service._df) == 1
         assert service._df.iloc[0]['item_name'] == 'Лен'
+        assert service._df.iloc[0]['city'] == 'Martlock'
     
     def test_get_all_items_empty(self, tmp_path):
         """Получение всех предметов из пустого хранилища."""
@@ -247,21 +299,23 @@ class TestDataStorageService:
         service = DataStorageService(data_file=csv_file)
         service._df = pd.DataFrame([
             {
+                'screenshot_date': '2026-06-11T14:30:45',
+                'city': 'Martlock',
                 'item_name': 'Бревна сосны',
                 'sell_price': 100,
                 'buy_price': 150,
                 'average_price': 125,
-                'screenshot_date': '2026-06-11',
                 'item_tier': 4,
                 'item_enchantment': 0,
                 'item_quality': 0
             },
             {
+                'screenshot_date': '2026-06-11T14:35:00',
+                'city': 'Thetford',
                 'item_name': 'Бревна березы',
                 'sell_price': 80,
                 'buy_price': 120,
                 'average_price': 100,
-                'screenshot_date': '2026-06-11',
                 'item_tier': 3,
                 'item_enchantment': 0,
                 'item_quality': 0
@@ -272,6 +326,7 @@ class TestDataStorageService:
         
         assert len(items) == 1
         assert items[0]['item_name'] == 'Бревна сосны'
+        assert items[0]['city'] == 'Martlock'
     
     def test_clear_data(self, tmp_path):
         """Очистка всех данных."""
@@ -279,11 +334,12 @@ class TestDataStorageService:
         service = DataStorageService(data_file=csv_file)
         service._df = pd.DataFrame([
             {
+                'screenshot_date': '2026-06-11T14:30:45',
+                'city': 'Martlock',
                 'item_name': 'Бревна сосны',
                 'sell_price': 100,
                 'buy_price': 150,
                 'average_price': 125,
-                'screenshot_date': '2026-06-11',
                 'item_tier': 4,
                 'item_enchantment': 0,
                 'item_quality': 0
