@@ -5,6 +5,7 @@ from pathlib import Path
 
 from src.config import config
 from src.models import MarketItem
+from src.services.items_catalog_service import ItemsCatalogService
 
 logger = logging.getLogger(__name__)
 
@@ -12,14 +13,16 @@ logger = logging.getLogger(__name__)
 class DataStorageService:
     """Service responsible for persisting market data to CSV."""
 
-    def __init__(self, data_file: Path = None):
+    def __init__(self, data_file: Path = None, catalog_service: ItemsCatalogService = None):
         """
         Initialize the data storage service.
         
         Args:
-            data_file: Path to the JSON data file. Defaults to config.DATA_FILE.
+            data_file: Path to the CSV data file. Defaults to config.DATA_FILE.
+            catalog_service: ItemsCatalogService instance for enriching items.
         """
         self._data_file = data_file or config.DATA_FILE
+        self._catalog_service = catalog_service
         self._data = self._load_data()
 
     def _load_data(self) -> list:
@@ -50,13 +53,15 @@ class DataStorageService:
                 # Write empty file with headers
                 with open(self._data_file, "w", encoding="utf-8-sig", newline="") as f:
                     writer = csv.DictWriter(f, fieldnames=[
-                        "item_name", "sell_price", "buy_price", "average_price", "screenshot_date"
+                        "item_name", "sell_price", "buy_price", "average_price", 
+                        "screenshot_date", "item_tier", "item_enchantment", "item_quality"
                     ])
                     writer.writeheader()
             else:
                 with open(self._data_file, "w", encoding="utf-8-sig", newline="") as f:
                     writer = csv.DictWriter(f, fieldnames=[
-                        "item_name", "sell_price", "buy_price", "average_price", "screenshot_date"
+                        "item_name", "sell_price", "buy_price", "average_price", 
+                        "screenshot_date", "item_tier", "item_enchantment", "item_quality"
                     ])
                     writer.writeheader()
                     writer.writerows(self._data)
@@ -68,13 +73,21 @@ class DataStorageService:
     def add_item(self, item: MarketItem) -> None:
         """
         Add a new market item to the data store.
+        Enriches item with catalog data if available.
         
         Args:
             item: MarketItem to add.
         """
+        # Enrich item with catalog data if service is available
+        if self._catalog_service:
+            enrichment = self._catalog_service.enrich_item(item.item_name)
+            item.item_tier = enrichment["item_tier"]
+            item.item_enchantment = enrichment["item_enchantment"]
+            item.item_quality = enrichment["item_quality"]
+        
         self._data.append(item.to_dict())
         self._save_data()
-        logger.info(f"Added item: {item.item_name}")
+        logger.info(f"Added item: {item.item_name} (tier={item.item_tier}, enchantment={item.item_enchantment})")
 
     def get_all_items(self) -> list:
         """

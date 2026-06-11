@@ -10,6 +10,7 @@ from src.config import config
 from src.services.screenshot_service import ScreenshotService
 from src.services.image_analysis_service import ImageAnalysisService
 from src.services.data_storage_service import DataStorageService
+from src.services.items_catalog_service import ItemsCatalogService
 from src.utils.hotkey_listener import HotkeyListener
 
 # Configure logging
@@ -30,7 +31,8 @@ class ScreenMarketScraper:
         
         self.screenshot_service = ScreenshotService()
         self.analysis_service = ImageAnalysisService()
-        self.storage_service = DataStorageService()
+        self.catalog_service = ItemsCatalogService()
+        self.storage_service = DataStorageService(catalog_service=self.catalog_service)
         self.hotkey_listener = HotkeyListener(
             hotkey=config.HOTKEY,
             callback=self._on_screenshot_triggered
