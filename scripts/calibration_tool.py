@@ -73,6 +73,11 @@ class ROISelector:
                 x2, y2 = x, y
                 
                 roi_name = self._get_current_roi_name()
+                
+                # Пропустить если все ROI уже выбраны
+                if not roi_name:
+                    return
+                
                 self.rois[roi_name] = {
                     "x1": min(x1, x2),
                     "y1": min(y1, y2),
