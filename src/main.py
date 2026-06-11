@@ -101,10 +101,6 @@ class ScreenMarketScraper:
         logger.info("Остановка Albion Online Market Screen Reader...")
         self._running = False
         self.hotkey_listener.stop()
-        
-        # Очистить скриншоты перед завершением
-        cleanup_screenshots()
-        
         logger.info("Приложение остановлено.")
 
 

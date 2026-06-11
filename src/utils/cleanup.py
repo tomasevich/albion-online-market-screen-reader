@@ -16,6 +16,8 @@ def cleanup_screenshots() -> None:
     """
     screenshots_dir = config.SCREENSHOTS_DIR
     
+    logger.info(f"Очистка скриншотов: {screenshots_dir}")
+    
     if not screenshots_dir.exists():
         logger.debug("Папка скриншотов не существует")
         return
@@ -27,16 +29,18 @@ def cleanup_screenshots() -> None:
             if item.is_file():
                 item.unlink()
                 deleted_count += 1
+                logger.debug(f"Удалён файл: {item.name}")
             elif item.is_dir():
                 # Рекурсивно удалить подпапку
                 import shutil
                 shutil.rmtree(item)
                 deleted_count += 1
+                logger.debug(f"Удалена папка: {item.name}")
         
         if deleted_count > 0:
             logger.info(f"Папка screenshots очищена ({deleted_count} объектов)")
         else:
-            logger.debug("Скриншоты не найдены")
+            logger.info("Скриншоты не найдены (папка пуста)")
             
     except (IOError, OSError) as e:
         logger.error(f"Ошибка при очистке скриншотов: {e}")
