@@ -1,4 +1,4 @@
-с#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Инструмент калибровки для определения областей ROI на example.png.
 
 Позволяет вручную выбрать области для OCR путём рисования прямоугольников
@@ -222,11 +222,6 @@ class ROISelector:
 
 def main():
     """Точка входа для инструмента калибровки."""
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(message)s"
-    )
-    
     example_path = config.EXAMPLE_FILE
     
     if not example_path.exists():
