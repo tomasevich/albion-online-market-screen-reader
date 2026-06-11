@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Единая точка входа в программу."""
+import logging
 import os
 import subprocess
 import sys
@@ -12,6 +13,24 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 from src.config import config
+
+# Путь к файлу логов
+LOG_FILE = project_root / "app.log"
+
+# Очистить предыдущие логи при запуске
+if LOG_FILE.exists():
+    LOG_FILE.unlink()
+
+# Настройка логирования в файл и консоль
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler(LOG_FILE, encoding="utf-8"),
+        logging.StreamHandler(sys.stdout),
+    ],
+)
+logger = logging.getLogger(__name__)
 
 
 def clear_screen():

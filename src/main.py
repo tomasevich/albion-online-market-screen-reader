@@ -1,5 +1,6 @@
 """Основная точка входа для приложения."""
 import logging
+import os
 import signal
 import sys
 from pathlib import Path
@@ -13,11 +14,21 @@ from src.services.data_storage_service import DataStorageService
 from src.services.items_catalog_service import ItemsCatalogService
 from src.utils.hotkey_listener import HotkeyListener
 
-# Настройка логирования
+# Путь к файлу логов
+LOG_FILE = config.BASE_DIR / "app.log"
+
+# Очистить предыдущие логи при запуске
+if LOG_FILE.exists():
+    LOG_FILE.unlink()
+
+# Настройка логирования в файл и консоль
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)],
+    handlers=[
+        logging.FileHandler(LOG_FILE, encoding="utf-8"),
+        logging.StreamHandler(sys.stdout),
+    ],
 )
 logger = logging.getLogger(__name__)
 

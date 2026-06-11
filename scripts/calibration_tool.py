@@ -15,6 +15,18 @@ import cv2
 
 from src.config import config
 
+# Путь к файлу логов
+LOG_FILE = config.BASE_DIR / "app.log"
+
+# Настройка логирования в файл и консоль
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler(LOG_FILE, encoding="utf-8"),
+        logging.StreamHandler(),
+    ],
+)
 logger = logging.getLogger(__name__)
 
 

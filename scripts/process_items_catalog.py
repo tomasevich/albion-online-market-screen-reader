@@ -1,7 +1,24 @@
 """Script to process and clean items.json catalog."""
 import json
+import logging
 import re
 from pathlib import Path
+
+from src.config import config
+
+# Путь к файлу логов
+LOG_FILE = config.BASE_DIR / "app.log"
+
+# Настройка логирования в файл и консоль
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler(LOG_FILE, encoding="utf-8"),
+        logging.StreamHandler(),
+    ],
+)
+logger = logging.getLogger(__name__)
 
 
 def parse_item_tier(unique_name: str) -> int:
@@ -41,12 +58,12 @@ def process_items_catalog(input_path: Path, output_path: Path) -> None:
     - Keep only EN-US and RU-RU localizations
     - Add ItemTier, ItemEnchantment, ItemQuality fields
     """
-    print(f"Loading items from {input_path}...")
+    logger.info(f"Загрузка предметов из {input_path}...")
     
     with open(input_path, "r", encoding="utf-8") as f:
         items = json.load(f)
     
-    print(f"Found {len(items)} items")
+    logger.info(f"Найдено {len(items)} предметов")
     
     processed_items = []
     
@@ -88,8 +105,8 @@ def process_items_catalog(input_path: Path, output_path: Path) -> None:
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(processed_items, f, ensure_ascii=False, indent=2)
     
-    print(f"Processed {len(processed_items)} items")
-    print(f"Saved to {output_path}")
+    logger.info(f"Обработано {len(processed_items)} предметов")
+    logger.info(f"Сохранено в {output_path}")
 
 
 def main():
@@ -100,11 +117,11 @@ def main():
     output_file = script_dir / "items.json"  # Overwrite original
     
     if not input_file.exists():
-        print(f"Error: Input file not found: {input_file}")
+        logger.error(f"Файл не найден: {input_file}")
         return
     
     process_items_catalog(input_file, output_file)
-    print("Done!")
+    logger.info("Готово!")
 
 
 if __name__ == "__main__":
