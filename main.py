@@ -32,9 +32,9 @@ def draw_menu(options: list, selected: int) -> None:
     
     for i, option in enumerate(options):
         if i == selected:
-            print(f"║  → {option:<39} ║")
+            print(f"║  → {option:<39}    ║")
         else:
-            print(f"║    {option:<39} ║")
+            print(f"║    {option:<39}    ║")
     
     print("╚═══════════════════════════════════════════════╝")
     print("\nСтрелки: выбор | Enter: начать | Esc: выход")
