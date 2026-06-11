@@ -7,6 +7,7 @@
 Использование:
     python scripts/calibration_tool.py
 """
+import json
 import sys
 from pathlib import Path
 
