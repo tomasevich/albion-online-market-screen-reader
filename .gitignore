@@ -24,7 +24,8 @@ Thumbs.db
 # Data files
 market_data.csv
 items.json
-screenshots/
+screenshots
+example.png
 
 # Installers
 *.exe
