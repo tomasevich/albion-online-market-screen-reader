@@ -11,7 +11,7 @@ class AppConfig:
     # Paths
     BASE_DIR: Path = Path(__file__).resolve().parent.parent
     SCREENSHOTS_DIR: Path = BASE_DIR / "screenshots"
-    DATA_FILE: Path = BASE_DIR / "market_data.json"
+    DATA_FILE: Path = BASE_DIR / "market_data.csv"
     EXAMPLE_FILE: Path = BASE_DIR / "example.png"
     ROI_CONFIG_FILE: Path = BASE_DIR / "roi_config.json"
     

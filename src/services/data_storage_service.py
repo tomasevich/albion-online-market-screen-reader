@@ -1,5 +1,5 @@
 """Service for storing and managing market data."""
-import json
+import csv
 import logging
 from pathlib import Path
 
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class DataStorageService:
-    """Service responsible for persisting market data to JSON."""
+    """Service responsible for persisting market data to CSV."""
 
     def __init__(self, data_file: Path = None):
         """
@@ -24,7 +24,7 @@ class DataStorageService:
 
     def _load_data(self) -> list:
         """
-        Load existing data from JSON file.
+        Load existing data from CSV file.
         
         Returns:
             List of market items, or empty list if file doesn't exist.
@@ -34,19 +34,32 @@ class DataStorageService:
             return []
         
         try:
-            with open(self._data_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
+            with open(self._data_file, "r", encoding="utf-8-sig") as f:
+                reader = csv.DictReader(f)
+                data = list(reader)
                 logger.info(f"Loaded {len(data)} items from data file")
                 return data
-        except (json.JSONDecodeError, IOError) as e:
+        except (csv.Error, IOError) as e:
             logger.warning(f"Error loading data file: {e}, starting fresh")
             return []
 
     def _save_data(self) -> None:
-        """Save current data to JSON file."""
+        """Save current data to CSV file."""
         try:
-            with open(self._data_file, "w", encoding="utf-8") as f:
-                json.dump(self._data, f, ensure_ascii=False, indent=2)
+            if not self._data:
+                # Write empty file with headers
+                with open(self._data_file, "w", encoding="utf-8-sig", newline="") as f:
+                    writer = csv.DictWriter(f, fieldnames=[
+                        "item_name", "sell_price", "buy_price", "average_price", "screenshot_date"
+                    ])
+                    writer.writeheader()
+            else:
+                with open(self._data_file, "w", encoding="utf-8-sig", newline="") as f:
+                    writer = csv.DictWriter(f, fieldnames=[
+                        "item_name", "sell_price", "buy_price", "average_price", "screenshot_date"
+                    ])
+                    writer.writeheader()
+                    writer.writerows(self._data)
             logger.debug(f"Data saved to {self._data_file}")
         except IOError as e:
             logger.error(f"Error saving data: {e}")
