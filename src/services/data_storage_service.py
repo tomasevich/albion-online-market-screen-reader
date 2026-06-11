@@ -24,7 +24,7 @@ class DataStorageService:
         """
         self._data_file = data_file or config.DATA_FILE
         self._catalog_service = catalog_service
-        self._data = self._load_data()
+        self._data: list = self._load_data()
 
     def _load_data(self) -> list:
         """
@@ -38,7 +38,7 @@ class DataStorageService:
             return []
         
         try:
-            with open(self._data_file, "r", encoding="utf-8-sig") as f:
+            with open(self._data_file, "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 data = list(reader)
                 logger.info(f"Загружено {len(data)} предметов из файла данных")
@@ -52,18 +52,26 @@ class DataStorageService:
         try:
             if not self._data:
                 # Записать пустой файл с заголовками
-                with open(self._data_file, "w", encoding="utf-8-sig", newline="") as f:
-                    writer = csv.DictWriter(f, fieldnames=[
-                        "item_name", "sell_price", "buy_price", "average_price", 
-                        "screenshot_date", "item_tier", "item_enchantment", "item_quality"
-                    ])
+                with open(self._data_file, "w", encoding="utf-8", newline="") as f:
+                    writer = csv.DictWriter(
+                        f,
+                        fieldnames=[
+                            "item_name", "sell_price", "buy_price", "average_price",
+                            "screenshot_date", "item_tier", "item_enchantment", "item_quality"
+                        ],
+                        quoting=csv.QUOTE_MINIMAL
+                    )
                     writer.writeheader()
             else:
-                with open(self._data_file, "w", encoding="utf-8-sig", newline="") as f:
-                    writer = csv.DictWriter(f, fieldnames=[
-                        "item_name", "sell_price", "buy_price", "average_price", 
-                        "screenshot_date", "item_tier", "item_enchantment", "item_quality"
-                    ])
+                with open(self._data_file, "w", encoding="utf-8", newline="") as f:
+                    writer = csv.DictWriter(
+                        f,
+                        fieldnames=[
+                            "item_name", "sell_price", "buy_price", "average_price",
+                            "screenshot_date", "item_tier", "item_enchantment", "item_quality"
+                        ],
+                        quoting=csv.QUOTE_MINIMAL
+                    )
                     writer.writeheader()
                     writer.writerows(self._data)
             logger.debug(f"Данные сохранены в {self._data_file}")
