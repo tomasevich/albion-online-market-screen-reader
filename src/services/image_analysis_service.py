@@ -66,11 +66,21 @@ class ImageAnalysisService:
             )
             
         except Exception as e:
-            logger.exception(f"Ошибка при анализе изображения: {e}")
-            return AnalysisResult(
-                screenshot_path=str(screenshot_path),
-                error=str(e)
-            )
+            error_msg = str(e)
+            # Игнорировать предупреждения Tesseract ObjectCache и read_params_file
+            if "ObjectCache" in error_msg or "read_params_file" in error_msg:
+                logger.warning(f"Tesseract warning (игнорируется): {error_msg[:200]}")
+                return AnalysisResult(
+                    screenshot_path=str(screenshot_path),
+                    item=None,
+                    error="Tesseract warning (не критично)"
+                )
+            else:
+                logger.exception(f"Ошибка при анализе изображения: {e}")
+                return AnalysisResult(
+                    screenshot_path=str(screenshot_path),
+                    error=str(e)
+                )
 
     def _log_extracted_text(self, extracted: ExtractedText) -> None:
         """Вывести извлечённый текст для отладки."""
@@ -266,12 +276,22 @@ class ImageAnalysisService:
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
         cleaned = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
         
-        # Выполнить OCR
-        text = pytesseract.image_to_string(
-            cleaned,
-            lang=config.OCR_LANG,
-            config=self._TESSERACT_CONFIG
-        ).strip()
+        # Выполнить OCR с обработкой ошибок Tesseract
+        try:
+            text = pytesseract.image_to_string(
+                cleaned,
+                lang=config.OCR_LANG,
+                config=self._TESSERACT_CONFIG
+            ).strip()
+        except pytesseract.pytesseract.TesseractError as e:
+            # Игнорировать предупреждения ObjectCache и read_params_file (не критичны)
+            error_msg = str(e)
+            if "ObjectCache" in error_msg or "read_params_file" in error_msg:
+                logger.warning(f"Tesseract warning (игнорируется): {error_msg[:200]}")
+                return ""  # Вернуть пустую строку вместо падения
+            else:
+                # Перевыбросить другие ошибки
+                raise
         
         return text
 
