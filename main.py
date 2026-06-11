@@ -49,11 +49,15 @@ def handle_process_catalog():
         return
     
     try:
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(project_root)
+        
         result = subprocess.run(
             [sys.executable, str(script_path)],
             cwd=project_root,
             capture_output=False,
-            text=True
+            text=True,
+            env=env
         )
         
         if result.returncode == 0:
@@ -87,9 +91,13 @@ def handle_calibration():
         return
     
     try:
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(project_root)
+        
         subprocess.run(
             [sys.executable, str(script_path)],
-            cwd=project_root
+            cwd=project_root,
+            env=env
         )
         print("\n✓ Калибровка сохранена")
     except Exception as e:
@@ -202,10 +210,14 @@ def handle_monitoring():
         return
     
     try:
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(project_root)
+        
         # Запустить мониторинг
-        result = subprocess.run(
+        subprocess.run(
             [sys.executable, str(src_main_path)],
-            cwd=project_root
+            cwd=project_root,
+            env=env
         )
         
         print("\n✓ Мониторинг остановлен")
