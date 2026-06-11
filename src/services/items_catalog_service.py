@@ -5,10 +5,16 @@ import re
 from pathlib import Path
 from typing import Optional
 
+from thefuzz import fuzz
+
 from src.config import config
 from src.logging_config import get_logger
 
 logger = get_logger(__name__)
+
+
+# Порог совпадения для нечёткого поиска (0-100)
+FUZZY_MATCH_THRESHOLD = 75
 
 
 class ItemsCatalogService:
@@ -59,7 +65,7 @@ class ItemsCatalogService:
     
     def enrich_item(self, item_name: str) -> dict:
         """
-        Обогастить название предмета данными о tier, enchantment и quality.
+        Обогатить название предмета данными о tier, enchantment и quality.
         
         Args:
             item_name: Название предмета (на русском или английском).
@@ -74,7 +80,7 @@ class ItemsCatalogService:
         item_data = self._items_by_name.get(normalized_name)
         
         if item_data:
-            logger.debug(f"Предмет '{item_name}' найден в каталоге")
+            logger.debug(f"Предмет '{item_name}' найден в каталоге (полное совпадение)")
             return {
                 "item_tier": item_data.get("ItemTier", 0),
                 "item_enchantment": item_data.get("ItemEnchantment", 0),
@@ -87,6 +93,18 @@ class ItemsCatalogService:
         
         if item_data:
             logger.debug(f"Предмет '{item_name}' найден частичным поиском")
+            return {
+                "item_tier": item_data.get("ItemTier", 0),
+                "item_enchantment": item_data.get("ItemEnchantment", 0),
+                "item_quality": item_data.get("ItemQuality", 0),
+                "unique_name": item_data.get("UniqueName", ""),
+            }
+        
+        # Попытка нечёткого поиска (fuzzy search)
+        item_data = self._fuzzy_search(normalized_name)
+        
+        if item_data:
+            logger.debug(f"Предмет '{item_name}' найден нечётким поиском")
             return {
                 "item_tier": item_data.get("ItemTier", 0),
                 "item_enchantment": item_data.get("ItemEnchantment", 0),
@@ -135,6 +153,48 @@ class ItemsCatalogService:
                 if clean_name in name or name in clean_name:
                     logger.debug(f"Частичное совпадение: '{clean_name}' -> '{name}'")
                     return item_data
+        
+        return None
+    
+    def _fuzzy_search(self, normalized_name: str) -> Optional[dict]:
+        """
+        Выполнить нечёткий поиск предмета с помощью алгоритма Левенштейна.
+        
+        Args:
+            normalized_name: Нормализованное название предмета.
+            
+        Returns:
+            Данные предмета или None если совпадение не найдено.
+        """
+        best_match = None
+        best_score = 0
+        
+        # Убрать модификаторы для нечёткого поиска
+        clean_name = normalized_name
+        modifiers = ["уникальная", "редкая", "необычная", "первозданная", 
+                     "тяжелая", "прочная", "грубая", "тонкая", "средняя", "рваная"]
+        
+        for modifier in modifiers:
+            clean_name = clean_name.replace(modifier, "").strip()
+        
+        # Искать лучшее нечёткое совпадение
+        for name, item_data in self._items_by_name.items():
+            # Рассчитать коэффициент схожести
+            score = fuzz.ratio(clean_name, name)
+            
+            # Также проверить частичное соотношение (для случаев когда одно название короче)
+            partial_score = fuzz.partial_ratio(clean_name, name)
+            
+            # Использовать максимальный из двух показателей
+            final_score = max(score, partial_score)
+            
+            if final_score > best_score and final_score >= FUZZY_MATCH_THRESHOLD:
+                best_score = final_score
+                best_match = item_data
+        
+        if best_match:
+            logger.debug(f"Нечёткое совпадение: '{clean_name}' -> score={best_score}")
+            return best_match
         
         return None
     

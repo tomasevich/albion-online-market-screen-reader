@@ -90,6 +90,7 @@ class DataStorageService:
         # Обогащать предмет данными из каталога если сервис доступен
         if self._catalog_service:
             enrichment = self._catalog_service.enrich_item(item.item_name)
+            logger.debug(f"Обогащение для '{item.item_name}': tier={enrichment['item_tier']}, enchantment={enrichment['item_enchantment']}")
             item.item_tier = enrichment["item_tier"]
             item.item_enchantment = enrichment["item_enchantment"]
             item.item_quality = enrichment["item_quality"]
