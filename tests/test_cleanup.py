@@ -2,7 +2,6 @@
 import pytest
 from pathlib import Path
 from unittest.mock import patch
-import shutil
 
 from src.utils.cleanup import cleanup_screenshots
 

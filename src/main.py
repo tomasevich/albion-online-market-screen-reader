@@ -1,5 +1,4 @@
 """Основная точка входа для приложения."""
-import atexit
 import signal
 import sys
 from pathlib import Path
@@ -13,14 +12,10 @@ from src.services.image_analysis_service import ImageAnalysisService
 from src.services.data_storage_service import DataStorageService
 from src.services.items_catalog_service import ItemsCatalogService
 from src.utils.hotkey_listener import HotkeyListener
-from src.utils.cleanup import cleanup_screenshots
 
 # Настроить централизованное логирование
 setup_logging()
 logger = get_logger(__name__)
-
-# Регистрация очистки скриншотов при выходе
-atexit.register(cleanup_screenshots)
 
 
 class ScreenMarketScraper:

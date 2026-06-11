@@ -13,6 +13,7 @@ sys.path.insert(0, str(project_root))
 
 from src.config import config
 from src.logging_config import setup_logging, get_logger
+from src.utils.cleanup import cleanup_screenshots
 
 # Настроить централизованное логирование
 setup_logging()
@@ -237,21 +238,6 @@ def handle_set_hotkey() -> None:
         pass
 
 
-def clear_screenshots() -> int:
-    """Очистить папку скриншотов и вернуть количество удалённых файлов."""
-    screenshots_dir = config.SCREENSHOTS_DIR
-    count = 0
-    
-    if screenshots_dir.exists():
-        for file in screenshots_dir.iterdir():
-            if file.is_file():
-                file.unlink()
-                count += 1
-    
-    logger.info(f"Папка screenshots очищена ({count} файлов)")
-    return count
-
-
 def handle_monitoring() -> None:
     """Обработать пункт 4: Мониторинг экрана."""
     clear_screen()
@@ -285,17 +271,9 @@ def handle_monitoring() -> None:
         logger.info("Мониторинг остановлен")
         print("\n✓ Мониторинг остановлен")
         
-        # Очистить папку screenshots
-        count = clear_screenshots()
-        print(f"✓ Папка screenshots очищена ({count} файлов)")
-            
     except KeyboardInterrupt:
         logger.info("Мониторинг прерван пользователем")
         print("\n\n✓ Мониторинг остановлен")
-        
-        # Очистить папку screenshots
-        count = clear_screenshots()
-        print(f"✓ Папка screenshots очищена ({count} файлов)")
     except Exception as e:
         logger.exception(f"Ошибка при мониторинге: {e}")
         print(f"\n❌ Ошибка: {e}")
@@ -319,51 +297,55 @@ def main_menu() -> None:
     
     selected = 0
     
-    while True:
-        try:
-            clear_screen()
-            draw_menu(options, selected)
-            
-            key = readchar.readkey()
-            
-            if key == readchar.key.UP:
-                selected = (selected - 1) % len(options)
-            elif key == readchar.key.DOWN:
-                selected = (selected + 1) % len(options)
-            elif key == readchar.key.ENTER:
-                if selected == 0:
-                    handle_process_catalog()
-                elif selected == 1:
-                    handle_calibration()
-                elif selected == 2:
-                    handle_set_hotkey()
-                elif selected == 3:
-                    handle_monitoring()
-                elif selected == 4:
-                    # Выход
-                    clear_screen()
-                    logger.info("Приложение завершено пользователем")
-                    print("До свидания!\n")
-                    break
-            elif key == readchar.key.ESC:
-                # Подтверждение выхода
+    try:
+        while True:
+            try:
                 clear_screen()
-                print("Вы уверены, что хотите выйти? (y/n)")
-                try:
-                    confirm = readchar.readkey().lower()
-                except KeyboardInterrupt:
-                    continue
-                if confirm == "y":
+                draw_menu(options, selected)
+                
+                key = readchar.readkey()
+                
+                if key == readchar.key.UP:
+                    selected = (selected - 1) % len(options)
+                elif key == readchar.key.DOWN:
+                    selected = (selected + 1) % len(options)
+                elif key == readchar.key.ENTER:
+                    if selected == 0:
+                        handle_process_catalog()
+                    elif selected == 1:
+                        handle_calibration()
+                    elif selected == 2:
+                        handle_set_hotkey()
+                    elif selected == 3:
+                        handle_monitoring()
+                    elif selected == 4:
+                        # Выход
+                        clear_screen()
+                        logger.info("Приложение завершено пользователем")
+                        print("До свидания!\n")
+                        break
+                elif key == readchar.key.ESC:
+                    # Подтверждение выхода
                     clear_screen()
-                    logger.info("Приложение завершено пользователем")
-                    print("До свидания!\n")
-                    break
-        except KeyboardInterrupt:
-            # Выход при Ctrl+C
-            clear_screen()
-            logger.info("Приложение завершено пользователем (Ctrl+C)")
-            print("До свидания!\n")
-            break
+                    print("Вы уверены, что хотите выйти? (y/n)")
+                    try:
+                        confirm = readchar.readkey().lower()
+                    except KeyboardInterrupt:
+                        continue
+                    if confirm == "y":
+                        clear_screen()
+                        logger.info("Приложение завершено пользователем")
+                        print("До свидания!\n")
+                        break
+            except KeyboardInterrupt:
+                # Выход при Ctrl+C в меню
+                clear_screen()
+                logger.info("Приложение завершено пользователем (Ctrl+C)")
+                print("До свидания!\n")
+                break
+    finally:
+        # Очистить скриншоты при ЛЮБОМ выходе из меню
+        cleanup_screenshots()
 
 
 def main() -> None:
