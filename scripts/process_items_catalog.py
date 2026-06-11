@@ -1,24 +1,14 @@
 """Script to process and clean items.json catalog."""
 import json
-import logging
 import re
 from pathlib import Path
 
 from src.config import config
+from src.logging_config import setup_logging, get_logger
 
-# Путь к файлу логов
-LOG_FILE = config.BASE_DIR / "app.log"
-
-# Настройка логирования в файл и консоль (добавляем режим дописывания, чтобы не удалять старые логи)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler(LOG_FILE, encoding="utf-8", mode="a"),
-        logging.StreamHandler(),
-    ],
-)
-logger = logging.getLogger(__name__)
+# Настроить централизованное логирование
+setup_logging()
+logger = get_logger(__name__)
 
 
 def parse_item_tier(unique_name: str) -> int:

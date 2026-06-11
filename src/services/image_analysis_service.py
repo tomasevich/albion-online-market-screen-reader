@@ -1,6 +1,5 @@
 """Сервис для анализа скриншотов и извлечения данных."""
 import json
-import logging
 import re
 from datetime import datetime
 from pathlib import Path
@@ -10,9 +9,10 @@ import numpy as np
 import pytesseract
 
 from src.config import config
+from src.logging_config import get_logger
 from src.models import AnalysisResult, ExtractedText, MarketItem
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # Установить путь к Tesseract
 pytesseract.pytesseract.tesseract_cmd = config.TESSERACT_PATH

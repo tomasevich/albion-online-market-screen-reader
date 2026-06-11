@@ -1,13 +1,12 @@
 """Сервис для захвата скриншотов."""
-import logging
 from datetime import datetime
 from pathlib import Path
 
 import mss
 
-from src.config import config
+from src.logging_config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ScreenshotService:

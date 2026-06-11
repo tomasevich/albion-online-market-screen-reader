@@ -4,7 +4,9 @@ from typing import Callable
 
 import keyboard
 
-logger = logging.getLogger(__name__)
+from src.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class HotkeyListener:

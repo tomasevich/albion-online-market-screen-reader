@@ -7,27 +7,21 @@
 Использование:
     python scripts/calibration_tool.py
 """
-import json
-import logging
+import sys
 from pathlib import Path
 
 import cv2
 
+# Добавить корень проекта в Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 from src.config import config
+from src.logging_config import setup_logging, get_logger
 
-# Путь к файлу логов
-LOG_FILE = config.BASE_DIR / "app.log"
-
-# Настройка логирования в файл и консоль (добавляем режим дописывания, чтобы не удалять старые логи)
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler(LOG_FILE, encoding="utf-8", mode="a"),
-        logging.StreamHandler(),
-    ],
-)
-logger = logging.getLogger(__name__)
+# Настроить централизованное логирование
+setup_logging()
+logger = get_logger(__name__)
 
 
 class ROISelector:

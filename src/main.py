@@ -1,6 +1,4 @@
 """Основная точка входа для приложения."""
-import logging
-import os
 import signal
 import sys
 from pathlib import Path
@@ -8,32 +6,16 @@ from pathlib import Path
 import keyboard
 
 from src.config import config
+from src.logging_config import setup_logging, get_logger
 from src.services.screenshot_service import ScreenshotService
 from src.services.image_analysis_service import ImageAnalysisService
 from src.services.data_storage_service import DataStorageService
 from src.services.items_catalog_service import ItemsCatalogService
 from src.utils.hotkey_listener import HotkeyListener
 
-# Путь к файлу логов
-LOG_FILE = config.BASE_DIR / "app.log"
-
-# Очистить предыдущие логи при запуске (игнорировать ошибку если файл занят)
-try:
-    if LOG_FILE.exists():
-        LOG_FILE.unlink()
-except PermissionError:
-    pass  # Файл занят другим процессом, продолжим работу
-
-# Настройка логирования в файл и консоль
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler(LOG_FILE, encoding="utf-8"),
-        logging.StreamHandler(sys.stdout),
-    ],
-)
-logger = logging.getLogger(__name__)
+# Настроить централизованное логирование
+setup_logging()
+logger = get_logger(__name__)
 
 
 class ScreenMarketScraper:

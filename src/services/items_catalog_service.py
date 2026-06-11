@@ -6,8 +6,9 @@ from pathlib import Path
 from typing import Optional
 
 from src.config import config
+from src.logging_config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ItemsCatalogService:

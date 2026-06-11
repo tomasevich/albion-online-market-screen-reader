@@ -4,10 +4,11 @@ import logging
 from pathlib import Path
 
 from src.config import config
+from src.logging_config import get_logger
 from src.models import MarketItem
 from src.services.items_catalog_service import ItemsCatalogService
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class DataStorageService:
