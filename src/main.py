@@ -80,10 +80,9 @@ class ScreenMarketScraper:
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
         
-        # Keep the main thread alive
+        # Keep the main thread alive using keyboard.wait()
         try:
-            while self._running:
-                pass
+            keyboard.wait()
         except KeyboardInterrupt:
             self.stop()
 

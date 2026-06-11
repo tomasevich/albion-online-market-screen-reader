@@ -1,6 +1,5 @@
 """Hotkey listener for global keyboard events."""
 import logging
-import threading
 from typing import Callable
 
 import keyboard
@@ -22,7 +21,6 @@ class HotkeyListener:
         self._hotkey = hotkey
         self._callback = callback
         self._running = False
-        self._thread: threading.Thread | None = None
 
     def start(self) -> None:
         """Start listening for hotkey presses."""
@@ -41,10 +39,6 @@ class HotkeyListener:
         
         self._running = True
         
-        # Start listener thread
-        self._thread = threading.Thread(target=self._listen_loop, daemon=True)
-        self._thread.start()
-        
         logger.info("Hotkey listener started")
 
     def stop(self) -> None:
@@ -58,10 +52,6 @@ class HotkeyListener:
         # Unregister hotkey
         keyboard.remove_hotkey(self._hotkey)
         
-        # Wait for thread to finish
-        if self._thread and self._thread.is_alive():
-            self._thread.join(timeout=2.0)
-        
         logger.info("Hotkey listener stopped")
 
     def _on_hotkey_pressed(self) -> None:
@@ -74,7 +64,3 @@ class HotkeyListener:
         except Exception as e:
             logger.exception(f"Error in hotkey callback: {e}")
 
-    def _listen_loop(self) -> None:
-        """Main loop for listening to keyboard events."""
-        while self._running:
-            keyboard.wait(0.1)  # Small sleep to prevent busy-waiting
