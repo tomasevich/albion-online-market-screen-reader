@@ -23,7 +23,7 @@ class ImageAnalysisService:
 
     def __init__(self):
         """Инициализировать сервис анализа изображений."""
-        self._tesseract_config = r'--oem 3 --psm 6'  # Предположить однородный блок текста
+        self._TESSERACT_CONFIG = r'--oem 3 --psm 6'  # Предположить однородный блок текста
 
     def analyze(self, screenshot_path: Path) -> AnalysisResult:
         """
@@ -270,7 +270,7 @@ class ImageAnalysisService:
         text = pytesseract.image_to_string(
             cleaned,
             lang=config.OCR_LANG,
-            config=self._tesseract_config
+            config=self._TESSERACT_CONFIG
         ).strip()
         
         return text
