@@ -1,8 +1,10 @@
-# Albion Online Screen Reader
+# Albion Online Market Screen Reader
 
-Программа для автоматического захвата, записывает в таблицу данные о товаре по кнопке
+Программа для захвата экрана, во время использования рынка (аукциона)
 
-![Albion Online Screen Reader](./Preview.png)
+> Анализирует экран, понимает какой предмет и записывает в таблицу данные
+
+![Albion Online Market Screen Reader](./preview.png)
 
 ## Описание
 
@@ -27,7 +29,7 @@
 2. **Создайте файл конфигурации:**
    - Скопируйте `.env.example` в `.env`:
      ```bash
-     copy .env.example .env
+     cp .env.example .env
      ```
    - Откройте `.env` и настройте параметры (путь к Tesseract, горячая клавиша и т.д.)
 
@@ -46,7 +48,7 @@
 
 ```
 ╔═══════════════════════════════════════════════╗
-║    Albion Online Screen Reader                ║
+║    Albion Online Market Screen Reader                ║
 ╠═══════════════════════════════════════════════╣
 ║  → Обработка справочника (item.json)          ║
 ║    Калибровка изображения (example.png)       ║
@@ -117,7 +119,7 @@ EXAMPLE_FILE=example.png
 **Формат записи:**
 
 ```
-2026-06-11 17:30:00 - src.main - INFO - Запуск Screen Market Scraper...
+2026-06-11 17:30:00 - src.main - INFO - Запуск Albion Online Market Screen Reader...
 ```
 
 ---
