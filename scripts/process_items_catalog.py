@@ -27,8 +27,9 @@ def parse_item_enchantment(unique_name: str) -> int:
         T6_MAIN_AXE@1 -> 1
         T4_BOW -> 0
         T8_OFFHAND_BOOK@3 -> 3
+        T7_HIDE_LEVEL4@4 -> 4
     """
-    match = re.search(r"@@(\d+)", unique_name)
+    match = re.search(r"@(\d+)$", unique_name)
     if match:
         return int(match.group(1))
     return 0
