@@ -19,6 +19,7 @@ sys.path.insert(0, str(project_root))
 
 from src.config import config
 from src.logging_config import setup_logging, get_logger
+from src.utils.cyrillic_text import put_cyrillic_text
 
 # Настроить централизованное логирование
 setup_logging()
@@ -103,14 +104,12 @@ class ROISelector:
                 if self.current_roi_index >= len(self.roi_names):
                     logger.info("Все области выбраны!")
                     self._save_config()
-                    cv2.putText(
+                    put_cyrillic_text(
                         self.image,
                         "ГОТОВО - нажмите 'q' для выхода",
                         (50, 50),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        1,
-                        (0, 255, 0),
-                        2
+                        font_size=24,
+                        color=(0, 255, 0)
                     )
                 
                 self.current_roi = None
@@ -168,23 +167,19 @@ class ROISelector:
             current_name = self._get_current_roi_name()
             
             if current_name:
-                cv2.putText(
+                put_cyrillic_text(
                     display_image,
                     f"Выберите: {current_name}",
                     (50, 50),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.7,
-                    (0, 255, 255),
-                    2
+                    font_size=28,
+                    color=(0, 255, 255)
                 )
-                cv2.putText(
+                put_cyrillic_text(
                     display_image,
                     f"Прогресс: {self.current_roi_index}/{len(self.roi_names)}",
-                    (50, 80),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (255, 255, 255),
-                    1
+                    (50, 90),
+                    font_size=20,
+                    color=(255, 255, 255)
                 )
             
             cv2.imshow(self.window_name, display_image)
