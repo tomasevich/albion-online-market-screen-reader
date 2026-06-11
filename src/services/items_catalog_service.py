@@ -36,7 +36,11 @@ class ItemsCatalogService:
             
             # Build index by both English and Russian names
             for item in items:
-                localized_names = item.get("LocalizedNames", {})
+                localized_names = item.get("LocalizedNames")
+                
+                # Skip items with no LocalizedNames
+                if not localized_names:
+                    continue
                 
                 # Index by Russian name
                 ru_name = localized_names.get("RU-RU", "")
