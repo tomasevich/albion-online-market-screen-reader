@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Единая точка входа в программу."""
+import os
 import subprocess
 import sys
 from pathlib import Path

@@ -68,10 +68,11 @@ def setup_logging() -> logging.Logger:
     
     # Пытаемся валидировать путь к Tesseract и логируем предупреждение если проблема
     tesseract_path = config.TESSERACT_PATH
-    if not os.path.exists(tesseract_path):
+    if tesseract_path and not os.path.exists(tesseract_path):
         logger = logging.getLogger(__name__)
         logger.warning(f"Tesseract не найден по пути: {tesseract_path}")
-        logger.warning("Пожалуйста, настройте правильный путь в .env файле")
+        logger.warning("Проверьте правильность пути в файле .env")
+        logger.warning(f"Текущее значение: TESSERACT_PATH={tesseract_path}")
     
     return logging.getLogger(__name__)
 
