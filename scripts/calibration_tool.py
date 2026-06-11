@@ -171,7 +171,7 @@ class ROISelector:
             
             if current_name:
                 # Текст с полупрозрачным фоном для контраста
-                put_cyrillic_text_with_background(
+                display_image = put_cyrillic_text_with_background(
                     display_image,
                     f"Выберите: {current_name}",
                     (50, 50),
@@ -180,7 +180,7 @@ class ROISelector:
                     bg_color=(0, 0, 0),  # Чёрный фон
                     bg_alpha=0.7
                 )
-                put_cyrillic_text_with_background(
+                display_image = put_cyrillic_text_with_background(
                     display_image,
                     f"Прогресс: {self.current_roi_index}/{len(self.roi_names)}",
                     (50, 90),
@@ -191,7 +191,7 @@ class ROISelector:
                 )
             
                 # Добавить подсказки по управлению
-                put_cyrillic_text_with_background(
+                display_image = put_cyrillic_text_with_background(
                     display_image,
                     "Клавиши: R - сброс, U - отмена, Q - выход",
                     (50, display_image.shape[0] - 40),
