@@ -19,7 +19,7 @@ sys.path.insert(0, str(project_root))
 
 from src.config import config
 from src.logging_config import setup_logging, get_logger
-from src.utils.cyrillic_text import put_cyrillic_text, DEFAULT_FONT
+from src.utils.cyrillic_text import put_cyrillic_text, put_cyrillic_text_with_background, DEFAULT_FONT
 
 # Настроить централизованное логирование
 setup_logging()
@@ -170,20 +170,35 @@ class ROISelector:
             current_name = self._get_current_roi_name()
             
             if current_name:
-                # Жёлтый текст с чёрной обводкой для контраста
-                put_cyrillic_text(
+                # Текст с полупрозрачным фоном для контраста
+                put_cyrillic_text_with_background(
                     display_image,
                     f"Выберите: {current_name}",
                     (50, 50),
                     font_size=28,
-                    color=(0, 255, 255)  # BGR: жёлтый
+                    text_color=(0, 255, 255),  # BGR: жёлтый
+                    bg_color=(0, 0, 0),  # Чёрный фон
+                    bg_alpha=0.7
                 )
-                put_cyrillic_text(
+                put_cyrillic_text_with_background(
                     display_image,
                     f"Прогресс: {self.current_roi_index}/{len(self.roi_names)}",
                     (50, 90),
                     font_size=20,
-                    color=(255, 255, 255)  # BGR: белый
+                    text_color=(255, 255, 255),  # BGR: белый
+                    bg_color=(0, 0, 0),  # Чёрный фон
+                    bg_alpha=0.7
+                )
+            
+                # Добавить подсказки по управлению
+                put_cyrillic_text_with_background(
+                    display_image,
+                    "Клавиши: R - сброс, U - отмена, Q - выход",
+                    (50, display_image.shape[0] - 40),
+                    font_size=18,
+                    text_color=(200, 200, 200),  # BGR: светло-серый
+                    bg_color=(0, 0, 0),
+                    bg_alpha=0.7
                 )
             
             cv2.imshow(self.window_name, display_image)

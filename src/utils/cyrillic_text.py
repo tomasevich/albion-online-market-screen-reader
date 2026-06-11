@@ -24,6 +24,11 @@ for font_path in FONT_PATHS:
         DEFAULT_FONT = str(font_path)
         break
 
+if DEFAULT_FONT is None:
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.warning("Шрифт для кириллицы не найден! Будет использоваться системный шрифт по умолчанию.")
+
 
 def put_cyrillic_text(
     image: np.ndarray,
