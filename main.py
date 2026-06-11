@@ -86,6 +86,56 @@ def handle_process_catalog() -> None:
         pass
 
 
+def handle_calibration() -> None:
+    """Обработать пункт 2: Калибровка изображения."""
+    clear_screen()
+    logger.info("Запуск инструмента калибровки...")
+    print("Запуск инструмента калибровки...\n")
+    
+    script_path = project_root / "scripts" / "calibration_tool.py"
+    
+    if not script_path.exists():
+        logger.error(f"Скрипт не найден: {script_path}")
+        print(f"❌ Скрипт не найден: {script_path}")
+        print("\nНажмите любую клавишу для возврата в меню...")
+        try:
+            readchar.readkey()
+        except KeyboardInterrupt:
+            pass
+        return
+    
+    if not config.EXAMPLE_FILE.exists():
+        logger.error(f"Файл примера не найден: {config.EXAMPLE_FILE}")
+        print(f"❌ Файл примера не найден: {config.EXAMPLE_FILE}")
+        print("\nНажмите любую клавишу для возврата в меню...")
+        try:
+            readchar.readkey()
+        except KeyboardInterrupt:
+            pass
+        return
+    
+    try:
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(project_root)
+        
+        subprocess.run(
+            [sys.executable, str(script_path)],
+            cwd=project_root,
+            env=env
+        )
+        logger.info("Калибровка завершена")
+        print("\n✓ Калибровка сохранена")
+    except Exception as e:
+        logger.exception(f"Ошибка при калибровке: {e}")
+        print(f"\n❌ Ошибка: {e}")
+    
+    print("\nНажмите любую клавишу для возврата в меню...")
+    try:
+        readchar.readkey()
+    except KeyboardInterrupt:
+        pass
+
+
 def handle_set_hotkey() -> None:
     """Обработать пункт 3: Установка горячей клавиши."""
     clear_screen()
