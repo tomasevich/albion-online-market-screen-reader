@@ -6,3 +6,4 @@ python-dotenv>=1.0.0
 readchar>=4.0.0
 thefuzz>=0.22.1
 pandas>=2.2.0
+pytest>=7.4.0
