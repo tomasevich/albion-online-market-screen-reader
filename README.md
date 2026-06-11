@@ -17,6 +17,7 @@
 
 ```
 project_root/
+├── main.py                # Точка входа (запускать отсюда!)
 ├── README.md              # Документация
 ├── requirements.txt       # Зависимости Python
 ├── market_data.json       # Файл с накопленными данными (корень проекта)
@@ -25,7 +26,6 @@ project_root/
 │   └── YYYY-MM-DD-HH-MM-SS.png
 ├── src/                   # Исходный код
 │   ├── __init__.py
-│   ├── main.py            # Точка входа
 │   ├── config.py          # Конфигурация и константы
 │   ├── models.py          # Модели данных
 │   ├── services/          # Сервисы (business logic)
@@ -132,11 +132,22 @@ YYYY-MM-DD-HH-MM-SS.png
 
 ## Примеры использования
 
-### Запуск программы
+### Быстрый старт
 
-```bash
-python main.py
-```
+1. **Установите зависимости:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Установите Tesseract OCR:**
+   - Windows: скачайте установщик с https://github.com/UB-Mannheim/tesseract/wiki
+   - После установки укажите путь к tesseract.exe в коде (если нужно)
+
+3. **Запустите программу:**
+   ```bash
+   python main.py
+   ```
+   > **Важно:** Запускайте из корня проекта (где лежит `main.py`)
 
 После запуска программа остаётся в фоновом режиме и ждёт нажатия **Print Screen**.
 
