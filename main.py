@@ -51,7 +51,10 @@ def handle_process_catalog() -> None:
         logger.error(f"Скрипт не найден: {script_path}")
         print(f"❌ Скрипт не найден: {script_path}")
         print("\nНажмите любую клавишу для возврата в меню...")
-        readchar.readkey()
+        try:
+            readchar.readkey()
+        except KeyboardInterrupt:
+            pass
         return
     
     try:
@@ -77,48 +80,10 @@ def handle_process_catalog() -> None:
         print(f"\n❌ Ошибка: {e}")
     
     print("\nНажмите любую клавишу для возврата в меню...")
-    readchar.readkey()
-
-
-def handle_calibration() -> None:
-    """Обработать пункт 2: Калибровка изображения."""
-    clear_screen()
-    logger.info("Запуск инструмента калибровки...")
-    print("Запуск инструмента калибровки...\n")
-    
-    script_path = project_root / "scripts" / "calibration_tool.py"
-    
-    if not script_path.exists():
-        logger.error(f"Скрипт не найден: {script_path}")
-        print(f"❌ Скрипт не найден: {script_path}")
-        print("\nНажмите любую клавишу для возврата в меню...")
-        readchar.readkey()
-        return
-    
-    if not config.EXAMPLE_FILE.exists():
-        logger.error(f"Файл примера не найден: {config.EXAMPLE_FILE}")
-        print(f"❌ Файл примера не найден: {config.EXAMPLE_FILE}")
-        print("\nНажмите любую клавишу для возврата в меню...")
-        readchar.readkey()
-        return
-    
     try:
-        env = os.environ.copy()
-        env["PYTHONPATH"] = str(project_root)
-        
-        subprocess.run(
-            [sys.executable, str(script_path)],
-            cwd=project_root,
-            env=env
-        )
-        logger.info("Калибровка завершена")
-        print("\n✓ Калибровка сохранена")
-    except Exception as e:
-        logger.exception(f"Ошибка при калибровке: {e}")
-        print(f"\n❌ Ошибка: {e}")
-    
-    print("\nНажмите любую клавишу для возврата в меню...")
-    readchar.readkey()
+        readchar.readkey()
+    except KeyboardInterrupt:
+        pass
 
 
 def handle_set_hotkey() -> None:
@@ -138,7 +103,10 @@ def handle_set_hotkey() -> None:
             logger.info("Отмена установки горячей клавиши")
             print("\nОтменено.")
             print("\nНажмите любую клавишу для возврата в меню...")
-            readchar.readkey()
+            try:
+                readchar.readkey()
+            except KeyboardInterrupt:
+                pass
             return
         
         # Обработать специальные клавиши
@@ -213,7 +181,10 @@ def handle_set_hotkey() -> None:
         print(f"\n❌ Ошибка: {e}")
     
     print("\nНажмите любую клавишу для возврата в меню...")
-    readchar.readkey()
+    try:
+        readchar.readkey()
+    except KeyboardInterrupt:
+        pass
 
 
 def clear_screenshots() -> int:
@@ -244,7 +215,10 @@ def handle_monitoring() -> None:
         logger.error(f"Файл не найден: {src_main_path}")
         print(f"❌ Файл не найден: {src_main_path}")
         print("\nНажмите любую клавишу для возврата в меню...")
-        readchar.readkey()
+        try:
+            readchar.readkey()
+        except KeyboardInterrupt:
+            pass
         return
     
     try:
@@ -277,7 +251,10 @@ def handle_monitoring() -> None:
         print(f"\n❌ Ошибка: {e}")
     
     print("\nНажмите любую клавишу для возврата в меню...")
-    readchar.readkey()
+    try:
+        readchar.readkey()
+    except KeyboardInterrupt:
+        pass
 
 
 def main_menu() -> None:
@@ -293,40 +270,50 @@ def main_menu() -> None:
     selected = 0
     
     while True:
-        clear_screen()
-        draw_menu(options, selected)
-        
-        key = readchar.readkey()
-        
-        if key == readchar.key.UP:
-            selected = (selected - 1) % len(options)
-        elif key == readchar.key.DOWN:
-            selected = (selected + 1) % len(options)
-        elif key == readchar.key.ENTER:
-            if selected == 0:
-                handle_process_catalog()
-            elif selected == 1:
-                handle_calibration()
-            elif selected == 2:
-                handle_set_hotkey()
-            elif selected == 3:
-                handle_monitoring()
-            elif selected == 4:
-                # Выход
-                clear_screen()
-                logger.info("Приложение завершено пользователем")
-                print("До свидания!\n")
-                break
-        elif key == readchar.key.ESC:
-            # Подтверждение выхода
+        try:
             clear_screen()
-            print("Вы уверены, что хотите выйти? (y/n)")
-            confirm = readchar.readkey().lower()
-            if confirm == "y":
+            draw_menu(options, selected)
+            
+            key = readchar.readkey()
+            
+            if key == readchar.key.UP:
+                selected = (selected - 1) % len(options)
+            elif key == readchar.key.DOWN:
+                selected = (selected + 1) % len(options)
+            elif key == readchar.key.ENTER:
+                if selected == 0:
+                    handle_process_catalog()
+                elif selected == 1:
+                    handle_calibration()
+                elif selected == 2:
+                    handle_set_hotkey()
+                elif selected == 3:
+                    handle_monitoring()
+                elif selected == 4:
+                    # Выход
+                    clear_screen()
+                    logger.info("Приложение завершено пользователем")
+                    print("До свидания!\n")
+                    break
+            elif key == readchar.key.ESC:
+                # Подтверждение выхода
                 clear_screen()
-                logger.info("Приложение завершено пользователем")
-                print("До свидания!\n")
-                break
+                print("Вы уверены, что хотите выйти? (y/n)")
+                try:
+                    confirm = readchar.readkey().lower()
+                except KeyboardInterrupt:
+                    continue
+                if confirm == "y":
+                    clear_screen()
+                    logger.info("Приложение завершено пользователем")
+                    print("До свидания!\n")
+                    break
+        except KeyboardInterrupt:
+            # Выход при Ctrl+C
+            clear_screen()
+            logger.info("Приложение завершено пользователем (Ctrl+C)")
+            print("До свидания!\n")
+            break
 
 
 def main() -> None:
