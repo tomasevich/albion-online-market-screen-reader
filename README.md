@@ -139,9 +139,12 @@ YYYY-MM-DD-HH-MM-SS.png
    pip install -r requirements.txt
    ```
 
-2. **Установите Tesseract OCR:**
-   - Windows: скачайте установщик с https://github.com/UB-Mannheim/tesseract/wiki
-   - После установки укажите путь к tesseract.exe в коде (если нужно)
+2. **Настройте путь к Tesseract OCR** (если не установлен по умолчанию):
+   - Откройте `src/config.py`
+   - Найдите строку `TESSERACT_PATH` и укажите правильный путь:
+   ```python
+   TESSERACT_PATH: str = r"C:\Users\vyach\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
+   ```
 
 3. **Запустите программу:**
    ```bash
