@@ -17,9 +17,12 @@ from src.utils.hotkey_listener import HotkeyListener
 # Путь к файлу логов
 LOG_FILE = config.BASE_DIR / "app.log"
 
-# Очистить предыдущие логи при запуске
-if LOG_FILE.exists():
-    LOG_FILE.unlink()
+# Очистить предыдущие логи при запуске (игнорировать ошибку если файл занят)
+try:
+    if LOG_FILE.exists():
+        LOG_FILE.unlink()
+except PermissionError:
+    pass  # Файл занят другим процессом, продолжим работу
 
 # Настройка логирования в файл и консоль
 logging.basicConfig(
