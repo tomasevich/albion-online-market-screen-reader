@@ -48,7 +48,8 @@ class DataStorageService:
         try:
             df = pd.read_csv(
                 self._data_file,
-                encoding='utf-8',
+                encoding='utf-8-sig',  # BOM для совместимости с Excel
+                sep=';',  # Разделитель для русскоязычного Excel
                 dtype={
                     'item_name': str,
                     'sell_price': int,
@@ -69,10 +70,11 @@ class DataStorageService:
     def _save_data(self) -> None:
         """Сохранить текущие данные в CSV файл с использованием pandas."""
         try:
-            # Сохранить с явной кодировкой UTF-8 без BOM и форматом чисел
+            # Excel-совместимый формат: UTF-8 с BOM (utf-8-sig) и разделитель точка с запятой
             self._df.to_csv(
                 self._data_file,
-                encoding='utf-8',
+                encoding='utf-8-sig',  # BOM для корректного отображения кириллицы в Excel
+                sep=';',  # Разделитель для русскоязычного Excel
                 index=False,
                 quoting=1,  # QUOTE_MINIMAL
                 lineterminator='\n',

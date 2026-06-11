@@ -89,11 +89,11 @@ class TestConvertDtypes:
 class TestSaveCsvFormat:
     """Тесты формата CSV файла."""
     
-    def test_save_no_bom(self, tmp_path):
+    def test_save_has_bom(self, tmp_path):
         """
-        Критичный тест: CSV без BOM.
+        Критичный тест: CSV с BOM для Excel.
         
-        Баг: pandas мог добавлять BOM в начало файла.
+        Требование: UTF-8 с BOM для корректного отображения кириллицы в Excel.
         """
         csv_file = tmp_path / "test.csv"
         service = DataStorageService(data_file=csv_file)
@@ -109,14 +109,11 @@ class TestSaveCsvFormat:
         }])
         service._save_data()
         
-        # Проверить что файл существует
-        assert csv_file.exists()
-        
-        # Проверить что нет BOM (первые 3 байта)
+        # Проверить наличие BOM (первые 3 байта)
         with open(csv_file, 'rb') as f:
-            first_bytes = f.read(3)
-            assert first_bytes != b'\xef\xbb\xbf'
-    
+            bom = f.read(3)
+            assert bom == b'\xef\xbb\xbf', "Файл должен начинаться с UTF-8 BOM для Excel"
+        
     def test_save_integer_format(self, tmp_path):
         """
         Критичный тест: целые числа без десятичных.
@@ -138,15 +135,17 @@ class TestSaveCsvFormat:
         service._save_data()
         
         # Прочитать файл и проверить формат
-        with open(csv_file, 'r', encoding='utf-8') as f:
+        with open(csv_file, 'r', encoding='utf-8-sig') as f:
             content = f.read()
             # Числа должны быть без .0 (в кавычках или без)
-            assert '"100"' in content or '100,' in content
+            assert '"100"' in content or '100;' in content
             assert '100.0' not in content
+            # Разделитель точка с запятой для Excel
+            assert ';' in content
     
     def test_save_utf8_encoding(self, tmp_path):
         """
-        Критичный тест: UTF-8 кодировка для кириллицы.
+        Критичный тест: UTF-8 с BOM кодировка для кириллицы в Excel.
         
         Баг: CSV с некорректной кодировкой для русских символов.
         """
@@ -164,10 +163,17 @@ class TestSaveCsvFormat:
         }])
         service._save_data()
         
-        # Прочитать с UTF-8 и проверить кириллицу
-        with open(csv_file, 'r', encoding='utf-8') as f:
+        # Проверить наличие BOM (первые 3 байта)
+        with open(csv_file, 'rb') as f:
+            bom = f.read(3)
+            assert bom == b'\xef\xbb\xbf', "Файл должен начинаться с UTF-8 BOM для Excel"
+        
+        # Прочитать с UTF-8-sig и проверить кириллицу
+        with open(csv_file, 'r', encoding='utf-8-sig') as f:
             content = f.read()
             assert 'Бревна сосны IV' in content
+            # Разделитель точка с запятой
+            assert ';' in content
     
     def test_save_line_terminator(self, tmp_path):
         """Проверка переводов строк (LF, не CRLF)."""
@@ -207,7 +213,7 @@ class TestDataStorageService:
         """Загрузка существующих данных из CSV."""
         csv_file = tmp_path / "test.csv"
         
-        # Создать тестовый CSV
+        # Создать тестовый CSV в Excel-формате (UTF-8 с BOM, разделитель ;)
         df = pd.DataFrame([{
             'item_name': 'Лен',
             'sell_price': 50,
@@ -218,7 +224,7 @@ class TestDataStorageService:
             'item_enchantment': 0,
             'item_quality': 0
         }])
-        df.to_csv(csv_file, index=False, encoding='utf-8')
+        df.to_csv(csv_file, index=False, encoding='utf-8-sig', sep=';')
         
         # Загрузить
         service = DataStorageService(data_file=csv_file)
