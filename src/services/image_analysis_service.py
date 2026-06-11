@@ -361,8 +361,8 @@ class ImageAnalysisService:
         Returns:
             MarketItem если данные корректны, иначе None.
         """
-        # Очистить название предмета - убрать распространённые артефакты OCR
-        item_name = extracted.title_text.strip()
+        # Очистить название предмета - убрать артефакты OCR и невидимые символы
+        item_name = self._clean_item_name(extracted.title_text)
         
         # Отфильтровать распространённые ошибки OCR
         if item_name in ["oy", "оу", "ou", "00", "OO", "qq", ""]:
@@ -393,6 +393,22 @@ class ImageAnalysisService:
             average_price=avg_price,
             screenshot_date=screenshot_date
         )
+
+    def _clean_item_name(self, item_name: str) -> str:
+        """
+        Очистить название предмета от артефактов OCR и невидимых символов.
+        
+        Args:
+            item_name: Исходное название предмета.
+            
+        Returns:
+            Очищенное название.
+        """
+        # Удалить невидимые символы в начале строки (включая ‚ U+201A)
+        cleaned = re.sub(r'^[\u2000-\u206F\u0000-\u001F\u00A0\u200B\uFEFF‚]+', '', item_name)
+        # Удалить лишние пробелы
+        cleaned = ' '.join(cleaned.split())
+        return cleaned.strip()
 
     def _safe_parse_int(self, value: str | int) -> int:
         """Безопасно распарсить целое число из строки."""
