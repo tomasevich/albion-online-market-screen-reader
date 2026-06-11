@@ -84,7 +84,6 @@ class ImageAnalysisService:
 
     def _log_extracted_text(self, extracted: ExtractedText) -> None:
         """Вывести извлечённый текст для отладки."""
-        logger.debug(f"Извлечённый текст - Город: '{extracted.city_text}'")
         logger.debug(f"Извлечённый текст - Название: '{extracted.title_text}'")
         logger.debug(f"Извлечённый текст - Цена покупки: '{extracted.buy_price_text}'")
         logger.debug(f"Извлечённый текст - Цена продажи: '{extracted.sell_price_text}'")
@@ -116,11 +115,6 @@ class ImageAnalysisService:
         if has_valid_rois:
             # Использовать настроенные координаты ROI
             logger.info("Использование настроенных координат ROI")
-            
-            # Область города (ПЕРВАЯ, английский язык)
-            if "city" in rois and self._is_valid_roi(rois["city"]):
-                city_roi = self._get_roi(image, rois["city"])
-                extracted.city_text = self._ocr_text(city_roi, lang="eng")
             
             # Область названия
             if "title" in rois and self._is_valid_roi(rois["title"]):
@@ -391,9 +385,6 @@ class ImageAnalysisService:
         # Очистить название предмета - убрать артефакты OCR и невидимые символы
         item_name = self._clean_item_name(extracted.title_text)
         
-        # Очистить город (убрать лишние пробелы)
-        city = extracted.city_text.strip()
-        
         # Отфильтровать распространённые ошибки OCR
         if item_name in ["oy", "оу", "ou", "00", "OO", "qq", ""]:
             logger.warning(f"Обнаружено некорректное название предмета (ошибка OCR): '{item_name}'")
@@ -401,11 +392,6 @@ class ImageAnalysisService:
         
         if len(item_name) < 2:
             logger.warning(f"Название предмета слишком короткое: '{item_name}'")
-            return None
-        
-        # Проверить город (обязательное поле)
-        if not city:
-            logger.warning("Город не распознан (обязательное поле)")
             return None
         
         # Создать временную метку из имени файла
@@ -422,7 +408,7 @@ class ImageAnalysisService:
         avg_price = self._safe_parse_int(extracted.avg_price_text)
         
         return MarketItem(
-            city=city,
+            city="",  # Будет установлен в src/main.py из config.MARKET_CITY
             item_name=item_name,
             sell_price=sell_price,
             buy_price=buy_price,

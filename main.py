@@ -137,6 +137,88 @@ def handle_calibration() -> None:
         pass
 
 
+def handle_set_city() -> None:
+    """Обработать пункт: Выбор города рынка."""
+    clear_screen()
+    logger.info("Выбор города рынка")
+    print("Выбор города рынка\n")
+    
+    # Список городов Albion Online
+    cities = [
+        "Martlock",
+        "Thetford",
+        "Lymhurst",
+        "Bridgewatch",
+        "Fort Sterling",
+        "Black Market",
+        "Caerleon"
+    ]
+    
+    selected = 0
+    
+    print("Используйте стрелки для выбора, Enter для подтверждения, Esc для отмены\n")
+    
+    while True:
+        try:
+            # Очистить и показать меню
+            clear_screen()
+            print("Выбор города рынка\n")
+            print("Используйте стрелки для выбора, Enter для подтверждения, Esc для отмены\n")
+            
+            for i, city in enumerate(cities):
+                if i == selected:
+                    print(f"  → {city}")
+                else:
+                    print(f"    {city}")
+            
+            key = readchar.readkey()
+            
+            if key == readchar.key.UP:
+                selected = (selected - 1) % len(cities)
+            elif key == readchar.key.DOWN:
+                selected = (selected + 1) % len(cities)
+            elif key == readchar.key.ENTER:
+                # Сохранить выбор
+                chosen_city = cities[selected]
+                
+                # Обновить .env
+                env_path = project_root / ".env"
+                env_vars: dict = {}
+                
+                if env_path.exists():
+                    with open(env_path, "r", encoding="utf-8") as f:
+                        for line in f:
+                            line = line.strip()
+                            if line and not line.startswith("#") and "=" in line:
+                                key_name, value = line.split("=", 1)
+                                env_vars[key_name.strip()] = value.strip()
+                
+                env_vars["MARKET_CITY"] = chosen_city
+                
+                with open(env_path, "w", encoding="utf-8") as f:
+                    for key_name, value in env_vars.items():
+                        f.write(f"{key_name}={value}\n")
+                
+                logger.info(f"Город рынка установлен: {chosen_city}")
+                print(f"\n✓ Город рынка установлен: {chosen_city}")
+                break
+            elif key == readchar.key.ESC:
+                logger.info("Отмена выбора города")
+                print("\nОтменено.")
+                break
+                
+        except KeyboardInterrupt:
+            logger.info("Отмена выбора города (Ctrl+C)")
+            print("\nОтменено.")
+            break
+    
+    print("\nНажмите любую клавишу для возврата в меню...")
+    try:
+        readchar.readkey()
+    except KeyboardInterrupt:
+        pass
+
+
 def handle_set_hotkey() -> None:
     """Обработать пункт 3: Установка горячей клавиши."""
     clear_screen()
@@ -291,6 +373,7 @@ def main_menu() -> None:
         "Обработка справочника (item.json)",
         "Калибровка изображения (example.png)",
         "Установка горячей клавиши",
+        "Выбор города рынка",
         "Мониторинг экрана",
         "Выход"
     ]
@@ -317,8 +400,10 @@ def main_menu() -> None:
                     elif selected == 2:
                         handle_set_hotkey()
                     elif selected == 3:
-                        handle_monitoring()
+                        handle_set_city()
                     elif selected == 4:
+                        handle_monitoring()
+                    elif selected == 5:
                         # Выход
                         clear_screen()
                         logger.info("Приложение завершено пользователем")

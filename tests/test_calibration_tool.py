@@ -170,9 +170,8 @@ class TestUIStrings:
         try:
             selector = ROISelector(test_path)
             
-            # Проверить что все ROI names определены (5 вместо 4)
-            assert len(selector.roi_names) == 5
-            assert "city" in selector.roi_names
+            # Проверить что все ROI names определены (4 зоны)
+            assert len(selector.roi_names) == 4
             assert "title" in selector.roi_names
             assert "buy_price" in selector.roi_names
             assert "sell_price" in selector.roi_names
@@ -302,9 +301,9 @@ class TestMouseCallback:
         selector._mouse_callback(cv2.EVENT_LBUTTONDOWN, 10, 20, 0, None)
         selector._mouse_callback(cv2.EVENT_LBUTTONUP, 50, 60, 0, None)
         
-        # Проверить что ROI сохранена (city первый)
-        assert "city" in selector.rois
-        assert selector.rois["city"]["x1"] == 10
-        assert selector.rois["city"]["y1"] == 20
-        assert selector.rois["city"]["x2"] == 50
-        assert selector.rois["city"]["y2"] == 60
+        # Проверить что ROI сохранена (title первый)
+        assert "title" in selector.rois
+        assert selector.rois["title"]["x1"] == 10
+        assert selector.rois["title"]["y1"] == 20
+        assert selector.rois["title"]["x2"] == 50
+        assert selector.rois["title"]["y2"] == 60

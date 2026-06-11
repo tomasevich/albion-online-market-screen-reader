@@ -71,6 +71,7 @@ class TestMarketItem:
         """from_dict() с пустым city."""
         data = {
             "screenshot_date": "2026-06-11T14:30:45",
+            "city": "",
             "item_name": "Лен",
             "sell_price": 50,
             "buy_price": 55,
@@ -87,19 +88,6 @@ class TestMarketItem:
 
 class TestExtractedText:
     """Тесты для ExtractedText."""
-    
-    def test_create_with_city_text(self):
-        """Создание ExtractedText с city_text."""
-        extracted = ExtractedText(
-            city_text="Martlock",
-            title_text="Лен",
-            buy_price_text="55",
-            sell_price_text="50",
-            avg_price_text="52"
-        )
-        
-        assert extracted.city_text == "Martlock"
-        assert extracted.title_text == "Лен"
     
     def test_default_values(self):
         """Значения по умолчанию пустые."""

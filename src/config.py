@@ -24,6 +24,9 @@ class AppConfig:
     # Hotkey configuration
     HOTKEY: str = field(init=False)
     
+    # Market city (selected from menu)
+    MARKET_CITY: str = field(init=False)
+    
     # File naming format for screenshots
     SCREENSHOT_FORMAT: str = "%Y-%m-%d-%H-%M-%S.png"
     
@@ -79,6 +82,9 @@ class AppConfig:
         
         # Hotkey from environment
         self.HOTKEY = os.getenv("HOTKEY", "print_screen")
+        
+        # Market city from environment
+        self.MARKET_CITY = os.getenv("MARKET_CITY", "")
         
         # OCR settings from environment
         self.OCR_LANG = os.getenv("OCR_LANG", "rus+eng")

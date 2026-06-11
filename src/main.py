@@ -58,9 +58,18 @@ class ScreenMarketScraper:
                 return
             
             if result.item:
+                # Проверить что город установлен
+                if not config.MARKET_CITY:
+                    logger.error("Город рынка не установлен! Выберите в меню пункт 'Выбор города рынка'")
+                    print("⚠ Город рынка не установлен! Выберите в меню пункт 'Выбор города рынка'")
+                    return
+                
+                # Установить город из конфига
+                result.item.city = config.MARKET_CITY
+                
                 # Шаг 3: Сохранение данных
                 self.storage_service.add_item(result.item)
-                logger.info(f"Предмет сохранён: {result.item.item_name}")
+                logger.info(f"Предмет сохранён: {result.item.item_name} ({result.item.city})")
             else:
                 logger.warning("Данные предмета не извлечены из скриншота")
                 
