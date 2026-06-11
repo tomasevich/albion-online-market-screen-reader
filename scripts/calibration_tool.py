@@ -170,7 +170,7 @@ class ROISelector:
             current_name = self._get_current_roi_name()
             
             if current_name:
-                # Текст с полупрозрачным фоном для контраста
+                # Текст с полупрозрачным фоном для контраста (3 строки вверху)
                 display_image = put_cyrillic_text_with_background(
                     display_image,
                     f"Выберите: {current_name}",
@@ -189,12 +189,10 @@ class ROISelector:
                     bg_color=(0, 0, 0),  # Чёрный фон
                     bg_alpha=0.7
                 )
-            
-                # Добавить подсказки по управлению
                 display_image = put_cyrillic_text_with_background(
                     display_image,
                     "Клавиши: R - сброс, U - отмена, Q - выход",
-                    (50, display_image.shape[0] - 40),
+                    (50, 120),
                     font_size=18,
                     text_color=(200, 200, 200),  # BGR: светло-серый
                     bg_color=(0, 0, 0),
