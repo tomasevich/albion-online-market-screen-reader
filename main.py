@@ -19,12 +19,12 @@ setup_logging()
 logger = get_logger(__name__)
 
 
-def clear_screen():
+def clear_screen() -> None:
     """Очистить экран консоли."""
     os.system("cls" if os.name == "nt" else "clear")
 
 
-def draw_menu(options: list, selected: int):
+def draw_menu(options: list, selected: int) -> None:
     """Отрисовать меню с выделением выбранного пункта."""
     print("\n╔═══════════════════════════════════════════════╗")
     print("║    Albion Online Market Screen Reader         ║")
@@ -40,14 +40,15 @@ def draw_menu(options: list, selected: int):
     print("\nСтрелки: выбор | Enter: начать | Esc: выход")
 
 
-def handle_process_catalog():
+def handle_process_catalog() -> None:
     """Обработать пункт 1: Обработка справочника."""
     clear_screen()
-    print("Обработка справочника предметов...\n")
+    logger.info("Запуск обработки справочника предметов...")
     
     script_path = project_root / "scripts" / "process_items_catalog.py"
     
     if not script_path.exists():
+        logger.error(f"Скрипт не найден: {script_path}")
         print(f"❌ Скрипт не найден: {script_path}")
         print("\nНажмите любую клавишу для возврата в меню...")
         readchar.readkey()
@@ -66,30 +67,36 @@ def handle_process_catalog():
         )
         
         if result.returncode == 0:
+            logger.info("Справочник обработан успешно")
             print("\n✓ Справочник обработан успешно")
         else:
+            logger.error("Ошибка при обработке справочника")
             print("\n❌ Ошибка при обработке справочника")
     except Exception as e:
+        logger.exception(f"Ошибка при обработке справочника: {e}")
         print(f"\n❌ Ошибка: {e}")
     
     print("\nНажмите любую клавишу для возврата в меню...")
     readchar.readkey()
 
 
-def handle_calibration():
+def handle_calibration() -> None:
     """Обработать пункт 2: Калибровка изображения."""
     clear_screen()
+    logger.info("Запуск инструмента калибровки...")
     print("Запуск инструмента калибровки...\n")
     
     script_path = project_root / "scripts" / "calibration_tool.py"
     
     if not script_path.exists():
+        logger.error(f"Скрипт не найден: {script_path}")
         print(f"❌ Скрипт не найден: {script_path}")
         print("\nНажмите любую клавишу для возврата в меню...")
         readchar.readkey()
         return
     
     if not config.EXAMPLE_FILE.exists():
+        logger.error(f"Файл примера не найден: {config.EXAMPLE_FILE}")
         print(f"❌ Файл примера не найден: {config.EXAMPLE_FILE}")
         print("\nНажмите любую клавишу для возврата в меню...")
         readchar.readkey()
@@ -104,17 +111,20 @@ def handle_calibration():
             cwd=project_root,
             env=env
         )
+        logger.info("Калибровка завершена")
         print("\n✓ Калибровка сохранена")
     except Exception as e:
+        logger.exception(f"Ошибка при калибровке: {e}")
         print(f"\n❌ Ошибка: {e}")
     
     print("\nНажмите любую клавишу для возврата в меню...")
     readchar.readkey()
 
 
-def handle_set_hotkey():
+def handle_set_hotkey() -> None:
     """Обработать пункт 3: Установка горячей клавиши."""
     clear_screen()
+    logger.info("Начало установки горячей клавиши")
     print("Установка горячей клавиши\n")
     print("Нажмите желаемую комбинацию клавиш...")
     print("(или Esc для отмены)\n")
@@ -125,6 +135,7 @@ def handle_set_hotkey():
         
         # Если нажат Esc — отмена
         if key == readchar.key.ESC:
+            logger.info("Отмена установки горячей клавиши")
             print("\nОтменено.")
             print("\nНажмите любую клавишу для возврата в меню...")
             readchar.readkey()
@@ -159,6 +170,7 @@ def handle_set_hotkey():
             hotkey = key.lower()
         
         # Вывести результат
+        logger.info(f"Зафиксирована клавиша: {hotkey}")
         print(f"\n✓ Зафиксирована клавиша: {hotkey}")
         
         # Проверить возможность регистрации
@@ -166,15 +178,17 @@ def handle_set_hotkey():
             import keyboard
             keyboard.add_hotkey(hotkey, lambda: None)
             keyboard.remove_hotkey(hotkey)
+            logger.info("Горячая клавиша валидирована успешно")
             print(f"✓ Горячая клавиша валидирована")
         except Exception as e:
+            logger.warning(f"Валидация горячей клавиши не удалась: {e}")
             print(f"⚠ Предупреждение: {e}")
         
         # Сохранить в .env
         env_path = project_root / ".env"
         
         # Считать существующие переменные
-        env_vars = {}
+        env_vars: dict = {}
         if env_path.exists():
             with open(env_path, "r", encoding="utf-8") as f:
                 for line in f:
@@ -191,24 +205,43 @@ def handle_set_hotkey():
             for key_name, value in env_vars.items():
                 f.write(f"{key_name}={value}\n")
         
+        logger.info(f"Горячая клавиша установлена: {hotkey}")
         print(f"✓ Горячая клавиша установлена: {hotkey}")
         
     except Exception as e:
+        logger.exception(f"Ошибка при установке горячей клавиши: {e}")
         print(f"\n❌ Ошибка: {e}")
     
     print("\nНажмите любую клавишу для возврата в меню...")
     readchar.readkey()
 
 
-def handle_monitoring():
+def clear_screenshots() -> int:
+    """Очистить папку скриншотов и вернуть количество удалённых файлов."""
+    screenshots_dir = config.SCREENSHOTS_DIR
+    count = 0
+    
+    if screenshots_dir.exists():
+        for file in screenshots_dir.iterdir():
+            if file.is_file():
+                file.unlink()
+                count += 1
+    
+    logger.info(f"Папка screenshots очищена ({count} файлов)")
+    return count
+
+
+def handle_monitoring() -> None:
     """Обработать пункт 4: Мониторинг экрана."""
     clear_screen()
+    logger.info("Запуск мониторинга экрана...")
     print("Запуск мониторинга экрана...\n")
     print("Нажмите Ctrl+C для остановки\n")
     
     src_main_path = project_root / "src" / "main.py"
     
     if not src_main_path.exists():
+        logger.error(f"Файл не найден: {src_main_path}")
         print(f"❌ Файл не найден: {src_main_path}")
         print("\nНажмите любую клавишу для возврата в меню...")
         readchar.readkey()
@@ -225,40 +258,29 @@ def handle_monitoring():
             env=env
         )
         
+        logger.info("Мониторинг остановлен")
         print("\n✓ Мониторинг остановлен")
         
         # Очистить папку screenshots
-        screenshots_dir = config.SCREENSHOTS_DIR
-        if screenshots_dir.exists():
-            count = 0
-            for file in screenshots_dir.iterdir():
-                if file.is_file():
-                    file.unlink()
-                    count += 1
-            print(f"✓ Папка screenshots очищена ({count} файлов)")
-        else:
-            print("✓ Папка screenshots очищена")
+        count = clear_screenshots()
+        print(f"✓ Папка screenshots очищена ({count} файлов)")
             
     except KeyboardInterrupt:
+        logger.info("Мониторинг прерван пользователем")
         print("\n\n✓ Мониторинг остановлен")
         
         # Очистить папку screenshots
-        screenshots_dir = config.SCREENSHOTS_DIR
-        if screenshots_dir.exists():
-            count = 0
-            for file in screenshots_dir.iterdir():
-                if file.is_file():
-                    file.unlink()
-                    count += 1
-            print(f"✓ Папка screenshots очищена ({count} файлов)")
+        count = clear_screenshots()
+        print(f"✓ Папка screenshots очищена ({count} файлов)")
     except Exception as e:
+        logger.exception(f"Ошибка при мониторинге: {e}")
         print(f"\n❌ Ошибка: {e}")
     
     print("\nНажмите любую клавишу для возврата в меню...")
     readchar.readkey()
 
 
-def main_menu():
+def main_menu() -> None:
     """Показать главное меню и обработать выбор."""
     options = [
         "Обработка справочника (item.json)",
@@ -292,6 +314,7 @@ def main_menu():
             elif selected == 4:
                 # Выход
                 clear_screen()
+                logger.info("Приложение завершено пользователем")
                 print("До свидания!\n")
                 break
         elif key == readchar.key.ESC:
@@ -301,12 +324,14 @@ def main_menu():
             confirm = readchar.readkey().lower()
             if confirm == "y":
                 clear_screen()
+                logger.info("Приложение завершено пользователем")
                 print("До свидания!\n")
                 break
 
 
-def main():
+def main() -> None:
     """Точка входа программы."""
+    logger.info("Запуск Albion Online Market Screen Reader...")
     main_menu()
 
 
