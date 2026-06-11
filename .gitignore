@@ -22,9 +22,9 @@ Thumbs.db
 # Logs
 *.log
 
-# Data files (optional - uncomment if you don't want to commit data)
-# market_data.json
-# screenshots/
+# Data files
+market_data.json
+screenshots/
 
 # Installers
 *.exe
