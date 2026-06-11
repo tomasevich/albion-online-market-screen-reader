@@ -4,6 +4,8 @@ import signal
 import sys
 from pathlib import Path
 
+import keyboard
+
 from src.config import config
 from src.services.screenshot_service import ScreenshotService
 from src.services.image_analysis_service import ImageAnalysisService
