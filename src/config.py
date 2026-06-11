@@ -1,5 +1,6 @@
 """Configuration and constants for the application."""
-from dataclasses import dataclass
+import json
+from dataclasses import dataclass, field
 from pathlib import Path
 
 
@@ -12,6 +13,7 @@ class AppConfig:
     SCREENSHOTS_DIR: Path = BASE_DIR / "screenshots"
     DATA_FILE: Path = BASE_DIR / "market_data.json"
     EXAMPLE_FILE: Path = BASE_DIR / "example.png"
+    ROI_CONFIG_FILE: Path = BASE_DIR / "roi_config.json"
     
     # Hotkey configuration
     HOTKEY: str = "print_screen"
@@ -32,8 +34,13 @@ class AppConfig:
     # Tesseract path (Windows default installation)
     TESSERACT_PATH: str = r"C:\Users\vyach\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
     
+    # ROI coordinates (loaded from roi_config.json)
+    roi_coordinates: dict = field(default_factory=dict)
+    
+    # Debug mode - save images with ROI overlays
+    DEBUG_MODE: bool = True
+    
     # Color ranges for region detection (BGR format for OpenCV)
-    # These are example ranges - should be calibrated with example.png
     COLOR_RANGES = {
         "title": {"lower": (100, 100, 200), "upper": (200, 200, 255)},     # Blue
         "buy_price": {"lower": (0, 0, 0), "upper": (100, 100, 150)},       # Red (in BGR)
@@ -43,8 +50,19 @@ class AppConfig:
     }
     
     def __post_init__(self):
-        """Ensure directories exist."""
+        """Ensure directories exist and load ROI config."""
         self.SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
+        self._load_roi_config()
+
+    def _load_roi_config(self) -> None:
+        """Load ROI coordinates from config file."""
+        if self.ROI_CONFIG_FILE.exists():
+            try:
+                with open(self.ROI_CONFIG_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    self.roi_coordinates = data.get("rois", {})
+            except (json.JSONDecodeError, IOError):
+                pass
 
 
 # Global config instance

@@ -1,5 +1,5 @@
 # Byte-compiled / optimized / DLL files
-__pycache__
+__pycache__/
 *.py[cod]
 *$py.class
 
@@ -28,3 +28,9 @@ screenshots/
 
 # Installers
 *.exe
+
+# Calibration
+roi_config.json
+
+# Debug images
+screenshots/debug_*.png
